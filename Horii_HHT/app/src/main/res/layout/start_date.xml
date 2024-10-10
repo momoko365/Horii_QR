@@ -37,15 +37,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
     <!--下部バーの中に表示するテキスト"F1 :確定"-->
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:text="F1 :確定"
-        app:layout_constraintBottom_toBottomOf="@+id/view2"
-        app:layout_constraintStart_toStartOf="@+id/view2"
-        app:layout_constraintTop_toTopOf="@+id/view2" />
     <!--下部バーの中に表示するテキスト"F4 :戻る"-->
     <TextView
         android:id="@+id/textView4"
@@ -75,7 +66,7 @@
     <!--日入れてもらうorデフォルト表示-->
     <EditText
         android:id="@+id/year"
-        android:layout_width="100dp"
+        android:layout_width="90dp"
         android:layout_height="46dp"
         android:layout_marginStart="54dp"
         android:layout_marginTop="16dp"
@@ -95,7 +86,7 @@
 
     <EditText
         android:id="@+id/month"
-        android:layout_width="50dp"
+        android:layout_width="40dp"
         android:layout_height="39dp"
         android:layout_marginStart="8dp"
         android:ems="10"
@@ -123,13 +114,21 @@
 
     <EditText
         android:id="@+id/day"
-        android:layout_width="50dp"
+        android:layout_width="40dp"
         android:layout_height="41dp"
         android:layout_marginStart="8dp"
         android:ems="10"
         android:inputType="date"
         app:layout_constraintBottom_toBottomOf="@+id/year"
         app:layout_constraintStart_toEndOf="@+id/textView7" />
+
+    <Button
+        android:id="@+id/sd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="F1:確定"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
