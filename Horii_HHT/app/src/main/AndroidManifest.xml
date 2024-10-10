@@ -26,6 +26,18 @@
             android:name=".MainActivity"
             android:exported="true">
         </activity>
+        <activity
+            android:name=".Start_Worker"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".Main_Menu"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".Nyuka01"
+            android:exported="true">
+        </activity>
     </application>
 
 </manifest>

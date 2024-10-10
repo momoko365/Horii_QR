@@ -16,6 +16,6 @@ class SplashActivity : AppCompatActivity() {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
-        }, 3000) // 3000ミリ秒（3秒）
+        }, 1500) // 1500ミリ秒（1.5秒）
     }
 }

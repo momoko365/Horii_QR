@@ -38,15 +38,33 @@
         app:layout_constraintStart_toStartOf="parent" />
     <!--下部バーの中に表示するテキスト"F1 :確定"-->
     <!--下部バーの中に表示するテキスト"F4 :戻る"-->
+<!--    <TextView-->
+<!--        android:id="@+id/textView4"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginEnd="24dp"-->
+<!--        android:text="F4:戻る"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/view2" />-->
     <TextView
-        android:id="@+id/textView4"
+        android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        android:text="F4:戻る"
+        android:layout_marginStart="24dp"
+        android:text="F1:確定"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/view2"
         app:layout_constraintTop_toTopOf="@+id/view2" />
+
+    <!--    <Button-->
+    <!--        android:id="@+id/sd"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:text="F1:確定"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent" />-->
+
     <!--ただのテキスト-->
     <TextView
         android:id="@+id/textView5"
@@ -122,13 +140,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/year"
         app:layout_constraintStart_toEndOf="@+id/textView7" />
 
-    <Button
-        android:id="@+id/sd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="F1:確定"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
