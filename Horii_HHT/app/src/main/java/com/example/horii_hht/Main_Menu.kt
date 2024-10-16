@@ -3,7 +3,6 @@ package com.example.horii_hht
 import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 class Main_Menu : AppCompatActivity() {
@@ -16,7 +15,7 @@ class Main_Menu : AppCompatActivity() {
         val checkBtn = findViewById<android.widget.Button>(R.id.checkbtn)
 
         nyukaBtn.setOnClickListener {
-            val intent = Intent(this, Nyuka01::class.java)
+            val intent = Intent(this, Nyuka01_QRread::class.java)
             startActivity(intent)
         }
     }

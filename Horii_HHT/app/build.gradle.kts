@@ -47,4 +47,5 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 //jarファイルのインポート
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+
 }

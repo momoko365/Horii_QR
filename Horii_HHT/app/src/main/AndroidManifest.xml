@@ -35,7 +35,19 @@
             android:exported="true">
         </activity>
         <activity
-            android:name=".Nyuka01"
+            android:name=".Nyuka01_QRread"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".Nyuka02_KenpinStart"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".Nyuka03_Barread"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".Nyuka04_Num"
             android:exported="true">
         </activity>
     </application>
