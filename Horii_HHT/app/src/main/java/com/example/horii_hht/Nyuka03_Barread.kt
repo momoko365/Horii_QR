@@ -22,7 +22,7 @@ class Nyuka03_Barread: AppCompatActivity() {
         // ReaderManagerの初期化
         readerManager = ReaderManager.InitInstance(this)
         val scanBtn = findViewById<android.widget.Button>(R.id.button2)
-        val itemBar = findViewById<android.widget.TextView>(R.id.caseNum)
+//        val itemBar = findViewById<android.widget.TextView>(R.id.caseNum)
 
 
         // ボタンを透明にする
@@ -47,11 +47,14 @@ class Nyuka03_Barread: AppCompatActivity() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == GeneralString.Intent_SOFTTRIGGER_DATA) {
                 // スキャンされたデータを取得
-                val scannedData = intent.getStringExtra(GeneralString.BcReaderData)
+                var scannedData = intent.getStringExtra(GeneralString.BcReaderData)
                 if (scannedData != null) {
-                    Toast.makeText(this@Nyuka03_Barread, "成功: $scannedData", Toast.LENGTH_SHORT).show()
+                    // 改行文字を削除
+                    scannedData = scannedData.replace("\n", "").replace("\r", "")
+
                     // エディットテキストにデータを表示
                     val itemBar = findViewById<EditText>(R.id.caseNum)
+                    itemBar.setText("") // リセット
                     itemBar.setText(scannedData)
 
                     // スキャンデータが13桁または14桁の数字かを確認
@@ -60,7 +63,7 @@ class Nyuka03_Barread: AppCompatActivity() {
                         val nextIntent = Intent(this@Nyuka03_Barread, Nyuka04_Num::class.java)
                         startActivity(nextIntent)
                     } else {
-                        Toast.makeText(this@Nyuka03_Barread, "スキャンデータが13桁または14桁の数字ではありません", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@Nyuka03_Barread, "コードの形式が正しくありません", Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     Toast.makeText(this@Nyuka03_Barread, "スキャンデータが取得できませんでした", Toast.LENGTH_SHORT).show()
