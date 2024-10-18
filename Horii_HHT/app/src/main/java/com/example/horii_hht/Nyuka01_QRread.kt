@@ -19,13 +19,21 @@ class Nyuka01_QRread : AppCompatActivity() {
     //インテントの取得
     private lateinit var filter: IntentFilter
     private var readerManager: ReaderManager? = null
-//ドライバおよびサービスと通信するために使用するクラス
+
+    //ドライバおよびサービスと通信するために使用するクラス
     private var mReaderManager: ReaderManager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka01)
 
+        filter = IntentFilter().apply {
+            addAction(GeneralString.Intent_SOFTTRIGGER_DATA)
+            addAction(GeneralString.Intent_PASS_TO_APP)
+            addAction(GeneralString.Intent_READERSERVICE_CONNECTED)
+        }
+
+        init()
         // ReaderManagerの初期化
 //        readerManager = ReaderManager.InitInstance(this)
 
@@ -35,47 +43,73 @@ class Nyuka01_QRread : AppCompatActivity() {
         // UIでボタンを見せない
         // ボタンを透明にする
         scanBtn.alpha = 0f
-        scanBtn.setOnClickListener {
-            readerManager = ReaderManager.InitInstance(this)
-            // スキャン結果を受け取るためのIntentフィルタ設定
-          filter = IntentFilter().apply {
-                addAction(com.cipherlab.barcode.GeneralString.Intent_SOFTTRIGGER_DATA)
-                addAction(com.cipherlab.barcode.GeneralString.Intent_PASS_TO_APP)
-                addAction(com.cipherlab.barcode.GeneralString.Intent_READERSERVICE_CONNECTED)
-                registerReceiver(scanDataReceiver, filter)
-            }
+        scanBtn.setOnClickListener{
+            registerReceiver(scanDataReceiver, filter)
+//            startbarcode()
+        }
+//        scanBtn.setOnClickListener {
+//            readerManager = ReaderManager.InitInstance(this)
+//            // スキャン結果を受け取るためのIntentフィルタ設定
+//          filter = IntentFilter().apply {
+//                addAction(com.cipherlab.barcode.GeneralString.Intent_SOFTTRIGGER_DATA)
+//                addAction(com.cipherlab.barcode.GeneralString.Intent_PASS_TO_APP)
+//                addAction(com.cipherlab.barcode.GeneralString.Intent_READERSERVICE_CONNECTED)
+//                registerReceiver(scanDataReceiver, filter)
+//            }
+//    }
+}
+
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        // BroadcastReceiverの解除
+//        unregisterReceiver(scanDataReceiver)
+//            mReaderManager?.Release()
+//    }
+
+//初期設定
+    fun init(){
+        //HT関係初期化（intentfilterのアクションの追加)
+        barcodeinit()
+    //intentfilterのアクションを登録
+        startbarcode()
+    }
+    //HT関係初期化（intentfilterのアクションの追加)
+    fun barcodeinit(){
+        filter.addAction(GeneralString.Intent_SOFTTRIGGER_DATA)
+    }
+//intentfilterのアクションを登録
+    fun startbarcode(){
+        registerReceiver(scanDataReceiver, filter)
+    }
+
+    // スキャンボタン押したときの処理
+    val scanDataReceiver = object : BroadcastReceiver() {
+        override  fun onReceive(context: Context?, intent: Intent?) {
+            Log.d("scan Start","scan")
+
         }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        // BroadcastReceiverの解除
-        unregisterReceiver(scanDataReceiver)
-            mReaderManager?.Release()
-    }
-
-
-    // スキャン結果を受け取るBroadcastReceiver
-    private val scanDataReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == GeneralString.Intent_SOFTTRIGGER_DATA) {
-                // スキャンされたデータを取得
-                val scannedData = intent.getStringExtra(GeneralString.BcReaderData)
-                Log.d("Nyuka01_QRread", "Scanned Data: $scannedData")
-                if (scannedData != null) {
-                    Toast.makeText(this@Nyuka01_QRread, "成功: $scannedData", Toast.LENGTH_SHORT).show()
-                    // データを次のアクティビティに渡して画面遷移
-                    val nextIntent = Intent(this@Nyuka01_QRread, Nyuka02_KenpinStart::class.java)
-                    nextIntent.putExtra("scannedData", scannedData)
-                    startActivity(nextIntent)
-                } else {
-                    Toast.makeText(this@Nyuka01_QRread, "スキャンデータが取得できませんでした", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                Toast.makeText(this@Nyuka01_QRread, "意図しないアクション: ${intent.action}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
+//    // スキャン結果を受け取るBroadcastReceiver
+//    private val scanDataReceiver = object : BroadcastReceiver() {
+//        override fun onReceive(context: Context, intent: Intent) {
+//            if (intent.action == GeneralString.Intent_SOFTTRIGGER_DATA) {
+//                // スキャンされたデータを取得
+//                val scannedData = intent.getStringExtra(GeneralString.BcReaderData)
+//                Log.d("Nyuka01_QRread", "Scanned Data: $scannedData")
+//                if (scannedData != null) {
+//                    Toast.makeText(this@Nyuka01_QRread, "成功: $scannedData", Toast.LENGTH_SHORT).show()
+//                    // データを次のアクティビティに渡して画面遷移
+//                    val nextIntent = Intent(this@Nyuka01_QRread, Nyuka02_KenpinStart::class.java)
+//                    nextIntent.putExtra("scannedData", scannedData)
+//                    startActivity(nextIntent)
+//                } else {
+//                    Toast.makeText(this@Nyuka01_QRread, "スキャンデータが取得できませんでした", Toast.LENGTH_SHORT).show()
+//                }
+//            } else {
+//                Toast.makeText(this@Nyuka01_QRread, "意図しないアクション: ${intent.action}", Toast.LENGTH_SHORT).show()
+//            }
+//        }
+//    }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
