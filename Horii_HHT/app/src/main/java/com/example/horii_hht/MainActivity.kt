@@ -8,6 +8,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
 //    private lateinit var sd: Button
@@ -19,6 +20,18 @@ class MainActivity : AppCompatActivity() {
         val yearEditText = findViewById<EditText>(R.id.year)
         val monthEditText = findViewById<EditText>(R.id.month)
         val dayEditText = findViewById<EditText>(R.id.day)
+
+        // 今日の日付を取得
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH) + 1 // Calendar.MONTHは0から始まるため+1
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        // EditTextにデフォルト表示
+        yearEditText.setText(year.toString())
+        monthEditText.setText(month.toString())
+        dayEditText.setText(day.toString())
+
 //入力後エンターでフォーカス移動
         yearEditText.setOnKeyListener { v, keyCode, event ->
             if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN) {
