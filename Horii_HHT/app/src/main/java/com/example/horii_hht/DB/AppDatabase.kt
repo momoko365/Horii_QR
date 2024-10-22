@@ -9,10 +9,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Worker::class], version = 1, exportSchema = false)
+@Database(entities = [Worker::class, Item::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun workerDAO(): WorkerDAO
-
+abstract fun itemDAO(): ItemDAO
 //    companion object {
 //        @Volatile
 //        private var INSTANCE: AppDatabase? = null

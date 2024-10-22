@@ -9,5 +9,7 @@ import androidx.room.Query
 interface ItemDAO {
   @Insert
     fun insert(item: Item)
+    @Query("SELECT * FROM Item")
+    fun getItemAll(): List<Item>
 
 }

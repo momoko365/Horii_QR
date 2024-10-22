@@ -5,7 +5,8 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class Item(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
+    val id: Int,
     //最初だけ読む４桁
     var kenpinNo: String,
     //4桁
