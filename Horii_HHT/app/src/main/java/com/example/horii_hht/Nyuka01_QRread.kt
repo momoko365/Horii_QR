@@ -33,32 +33,19 @@ class Nyuka01_QRread : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka01)
 
+        // ReaderManagerの初期化
+        readerManager = ReaderManager.InitInstance(this)
 
 
-//        // ハードウェアトリガーを有効にする設定
-//        readerManager?.SetActive(true)
-//val barcodemanager :ReaderManager = ReaderManager.InitInstance(this)
-//        barcodemanager.SetActive(true)
-
-        // スキャンを開始
-
-        // インテントフィルタの初期化（SoftScanTriggerとハードウェアスキャン両方をサポート）
+        // インテントフィルタの初期化（ハードウェアスキャンをサポート）
         filter = IntentFilter().apply {
-            addAction(GeneralString.Intent_SOFTTRIGGER_DATA) // ソフトスキャン用
             addAction(GeneralString.Intent_PASS_TO_APP) // ハードウェアスキャン用
         }
 
         // BroadcastReceiverの登録
         registerReceiver(scanDataReceiver, filter)
 
-        // 透明なスキャンのためのボタンを設定
-        val scanBtn = findViewById<Button>(R.id.button)
-        scanBtn.alpha = 0f
-        scanBtn.setOnClickListener {
-            readerManager?.SoftScanTrigger()
-//            val nextIntent = Intent(this@Nyuka01_QRread, Nyuka02_KenpinStart::class.java)
-//            startActivity(nextIntent)
-        }
+
 
         // データベースの初期化
         lifecycleScope.launch {
@@ -71,10 +58,12 @@ class Nyuka01_QRread : AppCompatActivity() {
         }
     }
 
+    // Activity破棄される時に呼び出されるライフサイクルメソッド
     override fun onDestroy() {
         super.onDestroy()
         // BroadcastReceiverの解除
         unregisterReceiver(scanDataReceiver)
+        // ReaderManagerの解放
         readerManager?.Release()
     }
 
@@ -82,7 +71,6 @@ class Nyuka01_QRread : AppCompatActivity() {
     private val scanDataReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
-                GeneralString.Intent_SOFTTRIGGER_DATA, // ソフトスキャンのデータ
                 GeneralString.Intent_PASS_TO_APP -> { // ハードウェアスキャンのデータ
                     val scannedData = intent.getStringExtra(GeneralString.BcReaderData)
                     Log.d("Nyuka01_QRread", "Scanned Data: $scannedData")

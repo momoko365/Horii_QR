@@ -36,18 +36,12 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
 
         // インテントフィルタの初期化
         filter = IntentFilter().apply {
-            addAction(GeneralString.Intent_SOFTTRIGGER_DATA)
+            addAction(GeneralString.Intent_PASS_TO_APP) // ハードウェアスキャン用
         }
 
         // BroadcastReceiverの登録
         registerReceiver(scanDataReceiver, filter)
 
-        //透明なスキャンのためのボタンを設定
-        val scanBtn = findViewById<Button>(R.id.scanbtn)
-        scanBtn.alpha = 0f
-        scanBtn.setOnClickListener {
-            readerManager?.SoftScanTrigger()
-        }
 
         //商品点数テキスト
         val itemNum = findViewById<TextView>(R.id.real_itemNum)
@@ -85,10 +79,19 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
         }
     }
 
+    // Activity破棄される時に呼び出されるライフサイクルメソッド
+    override fun onDestroy() {
+        super.onDestroy()
+        // BroadcastReceiverの解除
+        unregisterReceiver(scanDataReceiver)
+        // ReaderManagerの解放
+        readerManager?.Release()
+    }
+
     // スキャン結果を受け取るBroadcastReceiver
     private val scanDataReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == GeneralString.Intent_SOFTTRIGGER_DATA) {
+            if (intent.action == GeneralString.Intent_PASS_TO_APP) {
                 val scannedData = intent.getStringExtra(GeneralString.BcReaderData)
                 Log.d("Nyuka01_QRread", "Scanned Data: $scannedData")
                 if (scannedData != null) {
@@ -135,12 +138,7 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        // BroadcastReceiverの解除
-        unregisterReceiver(scanDataReceiver)
-        readerManager?.Release()
-    }
+
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
