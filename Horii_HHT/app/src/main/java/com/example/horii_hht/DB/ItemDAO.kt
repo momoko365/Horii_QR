@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 
 @Dao
 interface ItemDAO {
@@ -27,7 +28,28 @@ fun getTotalSuryo(): Int
     // 全行のzumi数をカウントする
     @Query("SELECT SUM(zumi) FROM Item")
     fun getTotalZumiCount(): Int
-
+//JANかITFが一致するアイテムを取得する（複数）
     @Query("SELECT * FROM ITEM WHERE JAN = :jan OR ITF = :itf")
     fun getItemByCode(jan: String, itf: String): List<Item>
+//JANかITFが一致するアイテムを取得する（一つだけ）
+    @Query("SELECT * FROM ITEM WHERE jan = :jan OR itf = :itf LIMIT 1")
+   fun getItemCode(jan: String, itf: String): Item?
+
+    @Update
+    fun update(item: Item)
+
+
+    @Query("DELETE FROM Item")
+    fun deleteAllItems()
+
+//    @Query("""    SELECT COUNT(*)
+//    FROM Item i1
+//    WHERE i1.zumi >= (
+//        SELECT SUM(i2.suryo)
+//        FROM Item i2
+//        WHERE i2.itemCD = i1.itemCD
+//    )
+//""")
+//    fun kenpinfinishItem(): List<Item>
+
 }

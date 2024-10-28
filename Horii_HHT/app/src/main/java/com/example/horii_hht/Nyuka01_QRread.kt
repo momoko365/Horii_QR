@@ -75,9 +75,9 @@ class Nyuka01_QRread : AppCompatActivity() {
                     val scannedData = intent.getStringExtra(GeneralString.BcReaderData)
                     Log.d("Nyuka01_QRread", "Scanned Data: $scannedData")
                     if (scannedData != null) {
-                        if (!isFinishing && !isDestroyed) {
-                            Toast.makeText(this@Nyuka01_QRread, "成功: $scannedData", Toast.LENGTH_SHORT).show()
-                        }
+//                        if (!isFinishing && !isDestroyed) {
+//                            Toast.makeText(this@Nyuka01_QRread, "成功: $scannedData", Toast.LENGTH_SHORT).show()
+//                        }
 
                         // 改行文字を削除
                         val cleanedData = scannedData.replace("\n", "")

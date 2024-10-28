@@ -91,27 +91,35 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
     // スキャン結果を受け取るBroadcastReceiver
     private val scanDataReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            // インテントのアクションが GeneralString.Intent_PASS_TO_APP かどうかを確認
             if (intent.action == GeneralString.Intent_PASS_TO_APP) {
+                // スキャンデータを取得
                 val scannedData = intent.getStringExtra(GeneralString.BcReaderData)
                 Log.d("Nyuka01_QRread", "Scanned Data: $scannedData")
                 if (scannedData != null) {
+                        // スキャンデータをトーストで表示
                     if (!isFinishing) {
                         Toast.makeText(this@Nyuka02_KenpinStart, "成功: $scannedData", Toast.LENGTH_SHORT).show()
                     }
 
+                    // 改行文字を削除
+                    val cleanedData = scannedData.replace("\n", "")
+
                     // QRコードデータをパース
-                    val dataParts = scannedData.split(",")
-                    if (dataParts.size == 9) {
+                    val dataParts = cleanedData.split(",")
+                    val validDataParts = dataParts.size / 8 * 8 // 8の倍数の要素数を取得
+
+                    for (i in 0 until validDataParts step 8) {
                         val item = Item(
                             id = 0, // autoGenerateなので0を設定
-                            kenpinNo = dataParts[0],
-                            itemCD = dataParts[1],
-                            itemName = dataParts[2],
-                            suryo = dataParts[3].toInt(),
-                            in_q = dataParts[4].toInt(),
-                            case_q = dataParts[5].toInt(),
-                            JAN = dataParts[6],
-                            ITF = dataParts[7],
+                            kenpinNo = dataParts[i],
+                            itemCD = dataParts[i + 1],
+                            itemName = dataParts[i + 2],
+                            suryo = dataParts[i + 3].toInt(),
+                            in_q = dataParts[i + 4].toInt(),
+                            case_q = dataParts[i + 5].toInt(),
+                            JAN = dataParts[i + 6],
+                            ITF = dataParts[i + 7],
                             zumi = 0
                         )
 
@@ -120,17 +128,15 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                             dao.insert(item)
                         }
 
-                    } else {
-                        if (!isFinishing) {
-                            Toast.makeText(this@Nyuka02_KenpinStart, "QRコードの形式が正しくありません", Toast.LENGTH_SHORT).show()
-                        }
                     }
                 } else {
+                    // スキャンデータが取得できなかった場合はエラー
                     if (!isFinishing) {
                         Toast.makeText(this@Nyuka02_KenpinStart, "スキャンデータが取得できませんでした", Toast.LENGTH_SHORT).show()
                     }
                 }
             } else {
+                // 意図しないアクションの場合はエラー
                 if (!isFinishing) {
                     Toast.makeText(this@Nyuka02_KenpinStart, "意図しないアクション: ${intent.action}", Toast.LENGTH_SHORT).show()
                 }
@@ -144,6 +150,20 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
         return when (keyCode) {
             KeyEvent.KEYCODE_F7 -> {
                 // F7キーが押されたときDBリセットする処理
+                lifecycleScope.launch(Dispatchers.IO) {
+                    dao.deleteAllItems()
+                    val itemCount = dao.getTotalSuryo()
+                    launch(Dispatchers.Main) {
+                        //遷移するだけやとスレッドが残っちゃってるからリセットしたはずのものもインサートされてる気がする
+                        if (itemCount == 0) {
+                            Toast.makeText(this@Nyuka02_KenpinStart, "リセット完了しました。QRコードを読み直してください。", Toast.LENGTH_SHORT).show()
+//                            val intent = Intent(this@Nyuka02_KenpinStart, Nyuka01_QRread::class.java)
+//                            startActivity(intent)
+                        } else {
+                            Toast.makeText(this@Nyuka02_KenpinStart, "リセットに失敗しました。", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
                 true
             }
             else -> super.onKeyDown(keyCode, event)

@@ -44,7 +44,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="16dp"
-        android:text="商品バーコード入力"
+        android:text="数量入力"
         android:textColor="#000000"
         app:layout_constraintBottom_toBottomOf="@+id/view"
         app:layout_constraintStart_toStartOf="@+id/view"
@@ -194,9 +194,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="16dp"
+
         android:ems="5"
         android:gravity="start|top"
-        android:inputType="textMultiLine"
+        android:inputType="number"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView5" />
@@ -208,7 +209,7 @@
         android:layout_marginTop="24dp"
         android:ems="5"
         android:gravity="start|top"
-        android:inputType="textMultiLine"
+        android:inputType="number"
         app:layout_constraintEnd_toEndOf="@+id/barcode"
         app:layout_constraintStart_toStartOf="@+id/barcode"
         app:layout_constraintTop_toBottomOf="@+id/barcode" />
@@ -244,5 +245,14 @@
         app:layout_constraintBottom_toBottomOf="@+id/baraNum"
         app:layout_constraintEnd_toStartOf="@+id/baraNum"
         app:layout_constraintTop_toTopOf="@+id/baraNum" />
+
+    <TextView
+        android:id="@+id/itemname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/startbtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/baraNum" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

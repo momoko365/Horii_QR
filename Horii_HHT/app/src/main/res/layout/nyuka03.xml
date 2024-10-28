@@ -172,20 +172,12 @@
         android:layout_marginTop="16dp"
         android:ems="10"
         android:gravity="start|top"
-        android:inputType="textMultiLine"
+        android:inputType="number"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView5" />
 
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="透明ボタン"
-        app:layout_constraintBottom_toTopOf="@+id/startbtn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-<!--    <Button-->
+    <!--    <Button-->
 <!--        android:id="@+id/stopbtn"-->
 <!--        android:layout_width="wrap_content"-->
 <!--        android:layout_height="wrap_content"-->
@@ -212,6 +204,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/barcode" />
+
+    <ImageView
+        android:id="@+id/fullscreenImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/aiueo"
+        android:visibility="gone" /> <!-- 初期状態では非表示 -->
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
