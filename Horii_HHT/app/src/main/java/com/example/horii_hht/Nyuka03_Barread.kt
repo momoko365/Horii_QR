@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -28,7 +29,9 @@ class Nyuka03_Barread: AppCompatActivity() {
     private lateinit var db: AppDatabase
     private lateinit var dao: ItemDAO
     private var data: String? = null
-
+    private lateinit var barcodedata: EditText
+    private lateinit var tyudanbtn: Button
+    private var isLocked: Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka03)
@@ -45,29 +48,39 @@ class Nyuka03_Barread: AppCompatActivity() {
 
 
         //商品総数テキスト
-        val itemAll = findViewById<android.widget.TextView>(R.id.itemAll)
+        val itemAll = findViewById<TextView>(R.id.itemAll)
         //商品総数済み数テキスト
-        val real_itemAll = findViewById<android.widget.TextView>(R.id.real_itemAll)
+        val real_itemAll = findViewById<TextView>(R.id.real_itemAll)
         //商品点数テキスト
-        val itemNum = findViewById<android.widget.TextView>(R.id.itemNum)
+        val itemNum = findViewById<TextView>(R.id.itemNum)
         //商品点数済み数テキスト
-        val real_itemNum = findViewById<android.widget.TextView>(R.id.real_itemNum)
+        val real_itemNum = findViewById<TextView>(R.id.real_itemNum)
         //検品番号テキスト
-        val kenpinNo = findViewById<android.widget.TextView>(R.id.kenpinNo)
+        val kenpinNo = findViewById<TextView>(R.id.kenpinNo)
         //DBの中身チェックするためだけのテキスト
         val dbtest =findViewById<TextView>(R.id.dbtest)
         //作業中断ボタン
-        val tyudanbtn = findViewById<Button>(R.id.startbtn)
+        tyudanbtn = findViewById<Button>(R.id.startbtn)
         val Image = findViewById<android.widget.ImageView>(R.id.fullscreenImage)
+
         // 作業中断ボタンのクリックリスナー
         tyudanbtn.setOnClickListener {
-            Image.visibility = View.VISIBLE
+            if (isLocked) {
+                // 画面ロック解除
+                unlockScreen()
+                tyudanbtn.text = "作業中断"
+
+            } else {
+                // 画面ロック
+                lockScreen()
+                tyudanbtn.text = "作業再開"
+
+
+            }
+            isLocked = !isLocked
         }
 
-        // フルスクリーン画像のタップリスナー
-        Image.setOnClickListener {
-           Image.visibility = View.GONE
-        }
+
         // データベースの初期化
         lifecycleScope.launch(Dispatchers.IO) {
             db = Room.databaseBuilder(
@@ -83,9 +96,6 @@ class Nyuka03_Barread: AppCompatActivity() {
             val kenpinNoValue = dao.getKenpinNo()
             val getCountOfZumiItems = dao.getCountOfZumiItems()
             val getTotalZumiCount = dao.getTotalZumiCount()
-//            val kenpinfinish = dao.kenpinfinishItem()
-            //DB内全データ取得（DBチェック用）
-//            val getall = dao.getItemAll()
 
             launch (Dispatchers.Main){
                 real_itemNum.text = getCountOfZumiItems.toString()
@@ -93,11 +103,40 @@ class Nyuka03_Barread: AppCompatActivity() {
                 real_itemAll.text = getTotalZumiCount.toString()
                 itemAll.text = totalSuryo.toString()
                 kenpinNo.text = kenpinNoValue
-                //DB内全データ表示（DBチェック用）
-//                dbtest.text = getall.toString()
             }
         }
 
+    }
+
+    private fun lockScreen() {
+        // 画面をロックする
+//        window.setFlags(
+//            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+//            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+//        )
+        // 他のすべてのビューを無効にする例
+        findViewById<View>(R.id.itemAll).isEnabled = false
+        findViewById<View>(R.id.real_itemAll).isEnabled = false
+        findViewById<View>(R.id.itemNum).isEnabled = false
+        findViewById<View>(R.id.real_itemNum).isEnabled = false
+        findViewById<View>(R.id.kenpinNo).isEnabled = false
+        findViewById<View>(R.id.dbtest).isEnabled = false
+        findViewById<EditText>(R.id.barcode).isEnabled = false
+        // ボタン自体は無効化しない
+        tyudanbtn.isEnabled = true
+    }
+
+    private fun unlockScreen() {
+        // すべてのビューを有効にする例
+        findViewById<View>(R.id.itemAll).isEnabled = true
+        findViewById<View>(R.id.real_itemAll).isEnabled = true
+        findViewById<View>(R.id.itemNum).isEnabled = true
+        findViewById<View>(R.id.real_itemNum).isEnabled = true
+        findViewById<View>(R.id.kenpinNo).isEnabled = true
+        findViewById<View>(R.id.dbtest).isEnabled = true
+        findViewById<EditText>(R.id.barcode).isEnabled = true
+        // ボタンは引き続き有効
+        tyudanbtn.isEnabled = true
     }
 
     // Activity破棄される時に呼び出されるライフサイクルメソッド
@@ -117,7 +156,7 @@ class Nyuka03_Barread: AppCompatActivity() {
                 data = intent.getStringExtra(GeneralString.BcReaderData)
                 if (data != null) {
                     // エディットテキストにデータを表示
-                    val barcodedata = findViewById<EditText>(R.id.barcode)
+                    barcodedata = findViewById<EditText>(R.id.barcode)
 //                    itemBar.setText("") // リセット
                     barcodedata.setText(data)
                 } else {
@@ -170,6 +209,10 @@ class Nyuka03_Barread: AppCompatActivity() {
                 } else {
                     Toast.makeText(this@Nyuka03_Barread, "スキャンデータが存在しません", Toast.LENGTH_SHORT).show()
                 }
+                true
+            }
+            KeyEvent.KEYCODE_F7 -> {
+                barcodedata.setText("")
                 true
             }
             else -> super.onKeyDown(keyCode, event)

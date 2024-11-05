@@ -5,15 +5,17 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <!--    上部バー-->
+    <!--上部バーの中に表示するテキスト"作業者入力"-->
     <View
         android:id="@+id/view"
         android:layout_width="0dp"
-        android:layout_height="60dp"
+        android:layout_height="80dp"
         android:background="#a4a8d4"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-    <!--上部バーの中に表示するテキスト"作業者入力"-->
+
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
@@ -21,6 +23,8 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="16dp"
         android:text="検品開始"
+        android:fontFamily="@font/sawarabi_gothic"
+        android:textSize="34sp"
         android:textColor="#000000"
         app:layout_constraintBottom_toBottomOf="@+id/view"
         app:layout_constraintStart_toStartOf="@+id/view"
@@ -29,7 +33,7 @@
     <View
         android:id="@+id/view2"
         android:layout_width="0dp"
-        android:layout_height="30dp"
+        android:layout_height="50dp"
         android:background="#a1d8e2"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -42,6 +46,8 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
         android:text="F7:リセット"
+        android:fontFamily="@font/sawarabi_gothic"
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/view2"
@@ -53,7 +59,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="108dp"
-        android:text="リストの点数・総数と一致すると検品を開始できます"
+        android:fontFamily="@font/sawarabi_gothic"
+        android:text="リストの点数・総数と一致す\nると検品を開始できます"
+        android:textColor="#4CAF50"
+        android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
@@ -65,6 +74,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:text="検品No："
+        android:fontFamily="@font/sawarabi_gothic"
+        android:textSize="34sp"
         app:layout_constraintBottom_toTopOf="@+id/textView5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/view" />
@@ -73,6 +84,8 @@
         android:id="@+id/kenpinNo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/sawarabi_gothic"
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="@+id/textView11"
         app:layout_constraintStart_toEndOf="@+id/textView11"
         app:layout_constraintTop_toTopOf="@+id/textView11" />
@@ -84,7 +97,8 @@
         android:layout_marginStart="64dp"
         android:layout_marginTop="32dp"
         android:text="商品点数"
-        android:textSize="20sp"
+        android:fontFamily="@font/sawarabi_gothic"
+        android:textSize="34sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView5" />
 
@@ -94,7 +108,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:text="商品総数"
-        android:textSize="20sp"
+        android:fontFamily="@font/sawarabi_gothic"
+        android:textSize="34sp"
+
         app:layout_constraintStart_toStartOf="@+id/textView9"
         app:layout_constraintTop_toBottomOf="@+id/textView9" />
 
@@ -103,6 +119,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="@+id/textView9"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView9"
@@ -112,6 +129,7 @@
         android:id="@+id/real_itemAll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="@+id/textView10"
         app:layout_constraintEnd_toEndOf="@+id/real_itemNum"
         app:layout_constraintHorizontal_bias="0.0"
@@ -120,10 +138,14 @@
 
     <Button
         android:id="@+id/startbtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="349dp"
+        android:layout_height="75dp"
         android:layout_marginBottom="24dp"
         android:text="検品開始"
+        android:textSize="34sp"
+        android:background="@drawable/kenpinstartbtn"
+        android:fontFamily="@font/sawarabi_gothic"
+        app:backgroundTint="@null"
         app:layout_constraintBottom_toTopOf="@+id/view2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

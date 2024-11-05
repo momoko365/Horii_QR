@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.KeyEvent
 import android.widget.Button
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
@@ -23,10 +24,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class Nyuka01_QRread : AppCompatActivity() {
-
+//インテントフィルターを初期化
     private lateinit var filter: IntentFilter
+    //ReaderManagerを初期化
     private var readerManager: ReaderManager? = null
+    //データベースを初期化
     private lateinit var db: AppDatabase
+    //DAOを初期化
     private lateinit var dao: ItemDAO
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,7 +46,7 @@ class Nyuka01_QRread : AppCompatActivity() {
             addAction(GeneralString.Intent_PASS_TO_APP) // ハードウェアスキャン用
         }
 
-        // BroadcastReceiverの登録
+        // BroadcastReceiverの登録（スキャンデータのブロードキャスト受信準備）
         registerReceiver(scanDataReceiver, filter)
 
 
@@ -54,6 +58,7 @@ class Nyuka01_QRread : AppCompatActivity() {
                 AppDatabase::class.java,
                 "app_database"
             ).fallbackToDestructiveMigration().build()
+            //データベース帯ジェクトの取得
             dao = db.itemDAO()
         }
     }
@@ -73,16 +78,12 @@ class Nyuka01_QRread : AppCompatActivity() {
             when (intent.action) {
                 GeneralString.Intent_PASS_TO_APP -> { // ハードウェアスキャンのデータ
                     val scannedData = intent.getStringExtra(GeneralString.BcReaderData)
-                    Log.d("Nyuka01_QRread", "Scanned Data: $scannedData")
                     if (scannedData != null) {
-//                        if (!isFinishing && !isDestroyed) {
-//                            Toast.makeText(this@Nyuka01_QRread, "成功: $scannedData", Toast.LENGTH_SHORT).show()
-//                        }
-
+                        // 取得したスキャンデータがnullでない場合
                         // 改行文字を削除
                         val cleanedData = scannedData.replace("\n", "")
 
-                        // QRコードデータをパース
+                        // QRコードデータをカンマ区切りでパース
                         val dataParts = cleanedData.split(",")
                         val validDataParts = dataParts.size / 8 * 8 // 8の倍数の要素数を取得
 
@@ -102,21 +103,42 @@ class Nyuka01_QRread : AppCompatActivity() {
 
                             // データベースにインサート
                             lifecycleScope.launch(Dispatchers.IO) {
-                                dao.insert(item)
-                                val nextIntent = Intent(this@Nyuka01_QRread, Nyuka02_KenpinStart::class.java)
-                                startActivity(nextIntent)
-
+                                try {
+                                    dao.insert(item)
+                                    // 次の画面に遷移
+                                    val nextIntent = Intent(this@Nyuka01_QRread, Nyuka02_KenpinStart::class.java)
+                                    startActivity(nextIntent)
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                    runOnUiThread {
+                                        AlertDialog.Builder(this@Nyuka01_QRread)
+                                            .setTitle("エラー")
+                                            .setMessage("不正なQRコードです。")
+                                            .setPositiveButton("OK", null)
+                                            .show()
+                                    }
+                                }
                             }
                         }
                     } else {
+                        // データがnullの場合エラーダイアログを表示
                         if (!isFinishing && !isDestroyed) {
-                            Toast.makeText(this@Nyuka01_QRread, "スキャンデータが取得できませんでした", Toast.LENGTH_SHORT).show()
+                            AlertDialog.Builder(this@Nyuka01_QRread)
+                                .setTitle("エラー")
+                                .setMessage("不正なQRコードです。")
+                                .setPositiveButton("OK", null)
+                                .show()
                         }
                     }
                 }
                 else -> {
+                    // 意図しないアクションの場合エラーダイアログを表示
                     if (!isFinishing && !isDestroyed) {
-                        Toast.makeText(this@Nyuka01_QRread, "意図しないアクション: ${intent.action}", Toast.LENGTH_SHORT).show()
+                        AlertDialog.Builder(this@Nyuka01_QRread)
+                            .setTitle("エラー")
+                            .setMessage("不正なQRコードです。")
+                            .setPositiveButton("OK", null)
+                            .show()
                     }
                 }
             }
@@ -125,6 +147,7 @@ class Nyuka01_QRread : AppCompatActivity() {
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
+            // F4キーが押されたときメインメニューに戻る処理
             KeyEvent.KEYCODE_F4 -> {
                 val intent = Intent(this, Main_Menu::class.java)
                 startActivity(intent)

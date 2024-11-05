@@ -23,6 +23,7 @@ data class Item(
     val JAN:String,
     //14桁
     val ITF:String,
-    val zumi : Int
+    val zumi : Int,
+
 ) {
 }

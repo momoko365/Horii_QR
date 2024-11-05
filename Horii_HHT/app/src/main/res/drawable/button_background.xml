@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+<!--    // 通常時の背景色-->
+    <item android:drawable="@color/yellow"></item>
+<!--    // 押下時の背景色-->
+    <item android:state_pressed="true" android:drawable="@color/Pink"></item>
+
+</selector>

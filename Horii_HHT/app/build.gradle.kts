@@ -52,5 +52,6 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 //jarファイルのインポート
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-
+    //CSVファイルのインポート
+    implementation ("org.apache.commons:commons-csv:1.9.0")
 }

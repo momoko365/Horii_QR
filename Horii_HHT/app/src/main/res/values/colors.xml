@@ -5,5 +5,13 @@
 
         <color name="button_normal">#FF6200EE</color>
         <color name="button_pressed">#FF3700B3</color>
-
+    <color name="Blue50">#E3F2FD</color>
+    <color name="yellow">#FFF1AB</color>
+    <color name="Grey500">#9e9e9e</color>
+    <color name="Pink">	#EC008C</color>
+    <color name="Orange">#F79428</color>
+    <color name="Green">#4CAF50</color>
+    <color name="Grey">#BFC5CA</color>
+    <color name="saikaiorange">
+        #ff7f50</color>
 </resources>

@@ -20,6 +20,7 @@ class Main_Menu : AppCompatActivity() {
         }
     }
 
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
 
@@ -29,6 +30,13 @@ class Main_Menu : AppCompatActivity() {
                 startActivity(intent)
                 true
             }
+            KeyEvent.KEYCODE_F1 -> {
+                // F1キーが押されたときの処理
+                val intent = Intent(this, Nyuka01_QRread::class.java)
+                startActivity(intent)
+                true
+            }
+
             else -> super.onKeyDown(keyCode, event)
         }
     }

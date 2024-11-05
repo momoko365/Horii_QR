@@ -8,7 +8,7 @@
     <View
         android:id="@+id/view"
         android:layout_width="0dp"
-        android:layout_height="60dp"
+        android:layout_height="80dp"
         android:background="#a4a8d4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,6 +21,8 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="16dp"
         android:text="QRコード読み込み"
+        android:fontFamily="@font/sawarabi_gothic"
+        android:textSize="34sp"
         android:textColor="#000000"
         app:layout_constraintBottom_toBottomOf="@+id/view"
         app:layout_constraintStart_toStartOf="@+id/view"
@@ -29,10 +31,11 @@
     <View
         android:id="@+id/view2"
         android:layout_width="0dp"
-        android:layout_height="30dp"
+        android:layout_height="50dp"
         android:background="#a1d8e2"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+
         app:layout_constraintStart_toStartOf="parent" />
     <!--下部バーの中に表示するテキスト"F1 :確定"-->
     <!--下部バーの中に表示するテキスト"F4 :戻る"-->
@@ -42,6 +45,8 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
         android:text="F4:戻る"
+        android:textSize="34sp"
+        android:fontFamily="@font/sawarabi_gothic"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/view2" />
@@ -52,7 +57,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="108dp"
-        android:text="検品リストのQRコードを読み込んでください"
+        android:fontFamily="@font/sawarabi_gothic"
+        android:text="検品リストのQRコードを\n読み込んでください"
+        android:textColor="#4CAF50"
+        android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
@@ -64,8 +72,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="64dp"
         android:layout_marginTop="32dp"
+        android:fontFamily="@font/sawarabi_gothic"
         android:text="商品点数"
-        android:textSize="20sp"
+        android:textSize="34sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView5" />
 
@@ -74,8 +83,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
+        android:fontFamily="@font/sawarabi_gothic"
         android:text="商品総数"
-        android:textSize="20sp"
+        android:textSize="34sp"
         app:layout_constraintStart_toStartOf="@+id/textView9"
         app:layout_constraintTop_toBottomOf="@+id/textView9" />
 
@@ -84,6 +94,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="@+id/textView9"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView9"
@@ -93,6 +104,7 @@
         android:id="@+id/real_itemAll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="@+id/textView10"
         app:layout_constraintEnd_toEndOf="@+id/real_itemNum"
         app:layout_constraintHorizontal_bias="0.0"

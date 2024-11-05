@@ -94,13 +94,13 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
             // インテントのアクションが GeneralString.Intent_PASS_TO_APP かどうかを確認
             if (intent.action == GeneralString.Intent_PASS_TO_APP) {
                 // スキャンデータを取得
-                val scannedData = intent.getStringExtra(GeneralString.BcReaderData)
+                var scannedData = intent.getStringExtra(GeneralString.BcReaderData)
                 Log.d("Nyuka01_QRread", "Scanned Data: $scannedData")
                 if (scannedData != null) {
                         // スキャンデータをトーストで表示
-                    if (!isFinishing) {
-                        Toast.makeText(this@Nyuka02_KenpinStart, "成功: $scannedData", Toast.LENGTH_SHORT).show()
-                    }
+//                    if (!isFinishing) {
+//                        Toast.makeText(this@Nyuka02_KenpinStart, "成功: $scannedData", Toast.LENGTH_SHORT).show()
+//                    }
 
                     // 改行文字を削除
                     val cleanedData = scannedData.replace("\n", "")
@@ -126,6 +126,7 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                         // データベースにインサート
                         lifecycleScope.launch(Dispatchers.IO) {
                             dao.insert(item)
+                            scannedData=null
                         }
 
                     }
@@ -154,11 +155,12 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                     dao.deleteAllItems()
                     val itemCount = dao.getTotalSuryo()
                     launch(Dispatchers.Main) {
-                        //遷移するだけやとスレッドが残っちゃってるからリセットしたはずのものもインサートされてる気がする
+                        //遷移するだけやとスレッド(scandata？)にデータが残っちゃってるからリセットしたはずのものもインサートされてる気がする
                         if (itemCount == 0) {
-                            Toast.makeText(this@Nyuka02_KenpinStart, "リセット完了しました。QRコードを読み直してください。", Toast.LENGTH_SHORT).show()
-//                            val intent = Intent(this@Nyuka02_KenpinStart, Nyuka01_QRread::class.java)
-//                            startActivity(intent)
+//                            Toast.makeText(this@Nyuka02_KenpinStart, "リセット完了しました。QRコードを読み直してください。", Toast.LENGTH_SHORT).show()
+
+                            val intent = Intent(this@Nyuka02_KenpinStart, Nyuka01_QRread::class.java)
+                            startActivity(intent)
                         } else {
                             Toast.makeText(this@Nyuka02_KenpinStart, "リセットに失敗しました。", Toast.LENGTH_SHORT).show()
                         }

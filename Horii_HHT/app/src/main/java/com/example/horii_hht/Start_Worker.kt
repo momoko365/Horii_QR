@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Database
@@ -64,8 +65,22 @@ private lateinit var dao: WorkerDAO
                         val intent = Intent(this@Start_Worker, Main_Menu::class.java)
                         startActivity(intent)
                     } else {
-                        // workerCDが合致しない場合、トースト表示
-                        Toast.makeText(this@Start_Worker, "担当者が登録されていません", Toast.LENGTH_SHORT).show()
+                        // workerCDが合致しない場合、ダイアログ表示
+                        val dialog = AlertDialog.Builder(this@Start_Worker)
+                            .setTitle("エラー")
+                            .setMessage("コードの誤りです")
+                            .setPositiveButton("F2:OK", null)
+                            .create()
+
+                        dialog.setOnKeyListener { _, keyCode, _ ->
+                            if (keyCode == KeyEvent.KEYCODE_F2) {
+                                dialog.dismiss()
+                                true
+                    }else {
+                                false
+                            }
+                        }
+                        dialog.show()
                     }
                 }
                 true

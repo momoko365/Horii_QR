@@ -8,7 +8,7 @@
     <View
         android:id="@+id/view"
         android:layout_width="0dp"
-        android:layout_height="60dp"
+        android:layout_height="80dp"
         android:background="#a4a8d4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,7 +21,9 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="16dp"
         android:text="作業者入力"
+        android:fontFamily="@font/sawarabi_gothic"
         android:textColor="#000000"
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="@+id/view"
         app:layout_constraintStart_toStartOf="@+id/view"
         app:layout_constraintTop_toTopOf="@+id/view" />
@@ -29,7 +31,7 @@
     <View
         android:id="@+id/view2"
         android:layout_width="0dp"
-        android:layout_height="30dp"
+        android:layout_height="50dp"
         android:background="#a1d8e2"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -41,7 +43,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
+        android:textSize="34sp"
         android:text="F4:戻る"
+        android:fontFamily="@font/sawarabi_gothic"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/view2" />
@@ -51,6 +55,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:text="F1:確定"
+        android:fontFamily="@font/sawarabi_gothic"
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/view2"
         app:layout_constraintTop_toTopOf="@+id/view2" />
@@ -61,7 +67,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="108dp"
+        android:fontFamily="@font/sawarabi_gothic"
         android:text="作業担当者コードを入力してください"
+        android:textColor="#4CAF50"
+        android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
@@ -69,11 +78,14 @@
 
     <EditText
         android:id="@+id/workerCD"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_width="200dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/bg_edittext"
         android:ems="10"
-        android:inputType="textPassword"
+        android:inputType="number"
+        android:textSize="34sp"
+        android:textAlignment="textEnd"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView5" />
