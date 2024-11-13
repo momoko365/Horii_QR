@@ -34,6 +34,7 @@ class Nyuka04_Num : AppCompatActivity() {
     private var item: Item? = null // クラス変数として宣言
     private lateinit var caseNum: EditText
     private lateinit var baraNum: EditText
+    // 外部ストレージへの書き込みパーミッションのリクエスト要求
     companion object {
         private const val REQUEST_WRITE_PERMISSION = 100
     }
@@ -44,7 +45,7 @@ class Nyuka04_Num : AppCompatActivity() {
         setContentView(R.layout.nyuka04)
 
         // Intentで全画面からデータを取得
-        val scannedData = intent.getStringExtra("SCANNED_DATA")
+        val scannedData = intent.getStringExtra("barcode")
 
         //商品総数テキスト
         val itemAll = findViewById<android.widget.TextView>(R.id.itemAll)
@@ -67,12 +68,15 @@ class Nyuka04_Num : AppCompatActivity() {
         //完了ボタン
         val finishbtn = findViewById<Button>(R.id.button2)
 
+        // 次へボタンクリックした時の処理
         nextbtn.setOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {
+                // データベースからバーコードが一致するアイテムを取得
                 item = scannedData?.let { it1 -> dao.getItemCode(jan = it1, itf = "") }
                 // ケース数の入力処理
                 val caseNumValue = caseNum.text.toString().toIntOrNull()
                 if (caseNumValue != null && item != null) {
+                    // ケース数の合計を計算しデータベースに更新
                     val totalCaseNum = caseNumValue * item!!.in_q + item!!.zumi
                     // `zumi` に登録する処理をここに追加
                     dao.update(item!!.copy(zumi = totalCaseNum))
@@ -89,12 +93,6 @@ class Nyuka04_Num : AppCompatActivity() {
                     startActivity(intent)
                 }
             }
-        }
-
-        finishbtn.setOnClickListener{
-            requestWritePermissionAndWriteCSV()
-            val intent = Intent(this, Main_Menu::class.java)
-            startActivity(intent)
         }
 
         // データベースの初期化
@@ -120,7 +118,7 @@ class Nyuka04_Num : AppCompatActivity() {
             val getCountOfZumiItems = dao.getCountOfZumiItems()
             val getTotalZumiCount = dao.getTotalZumiCount()
 
-
+            //UIの更新処理
             launch (Dispatchers.Main){
                 real_itemNum.text = getCountOfZumiItems.toString()
                 itemNum.text = distinctItemCount.toString()
@@ -132,41 +130,64 @@ class Nyuka04_Num : AppCompatActivity() {
 
             }
         }
+
+        // 完了ボタンがクリックされた時の処理
+        finishbtn.setOnClickListener{
+            //外部ストレージへの書き込みパーミッションがすでに許可されているかどうかをチェックして必要に応じてリクエストする関数
+            requestWritePermissionAndWriteCSV()
+            //メインメニューに遷移
+            val intent = Intent(this, Main_Menu::class.java)
+            startActivity(intent)
+        }
+
     }
 
+    //外部ストレージへの書き込みパーミッションがすでに許可されているかどうかをチェックして必要に応じてリクエストする関数
     private fun requestWritePermissionAndWriteCSV() {
         val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
         when {
+            // (1) パーミッションがすでに許可されている場合
             ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED -> {
+               // CSV書き込み用の関数を実行
                 writeDataToCSV()
             }
+            //(2)パーミッションを許可するための説明が必要な場合
             shouldShowRequestPermissionRationale(permission) -> {
+                // ユーザーに説明のためのトーストを表示
                 Toast.makeText(this, "外部ストレージへの書き込みパーミッションが必要です。", Toast.LENGTH_LONG).show()
             }
             else -> {
+                // (3) それ以外（初めてパーミッションをリクエストする場合）
                 requestPermissions(arrayOf(permission), REQUEST_WRITE_PERMISSION)
             }
         }
     }
 
+    // ユーザーがパーミッションダイアログに応答した結果（許可か拒否）を受け取る関数
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_WRITE_PERMISSION) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                // パーミッションが許可されたらCSV書き込み用の関数を実行
                 writeDataToCSV()
             } else {
+                // パーミッションが拒否されたらトーストを表示
                 Toast.makeText(this, "パーミッションが拒否されました。", Toast.LENGTH_LONG).show()
             }
         }
     }
 
+    // CSVファイルにデータを書き込む関数
     private fun writeDataToCSV() {
         lifecycleScope.launch {
             val items = withContext(Dispatchers.IO) {
+                // データベースから全てのアイテムを取得
                 dao.getItemAll()
             }
+            // ファイル書き込み先のディレクトリを作成
             val customDir = File("/storage/self/primary/horiitest")
             if (!customDir.exists()) {
+                // ディレクトリが存在しない場合作成
                 val dirCreated = customDir.mkdirs()
                 if (!dirCreated) {
                     runOnUiThread {
@@ -175,10 +196,12 @@ class Nyuka04_Num : AppCompatActivity() {
                     return@launch
                 }
             }
+            // CSVファイルを作成
             val csvFile = File(customDir, "app_database.csv")
             try {
-                FileWriter(csvFile).use { writer ->
-                    CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(*Item::class.java.declaredFields.map { it.name }.toTypedArray())).use { csvPrinter ->
+                // CSVファイルにデータを書き込む
+                FileWriter(csvFile).use { writer ->  //useはwriterオブジェクト使用後クローズ処理を自動で行う
+                    CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(*Item::class.java.declaredFields.map { it.name }.toTypedArray())).use { csvPrinter -> //CSVPrinterはCSVフォーマットに従った書き込みを簡単に実行してくれる
                         for (item in items) {
                             csvPrinter.printRecord(item.itemCD, item.itemName, item.suryo, item.in_q, item.case_q, item.JAN, item.ITF, item.zumi)
                         }
@@ -205,8 +228,10 @@ class Nyuka04_Num : AppCompatActivity() {
                 true
             }
             KeyEvent.KEYCODE_F7 -> {
-                caseNum.setText("")
-baraNum.setText("")
+                // F7キーが押されたときの処理
+                val intent = Intent(this, Nyuka02_KenpinStart::class.java)
+                startActivity(intent)
+                finish()
                 true
             }
 

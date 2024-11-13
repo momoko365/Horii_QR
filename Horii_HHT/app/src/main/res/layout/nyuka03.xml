@@ -52,8 +52,10 @@
         app:layout_constraintStart_toStartOf="parent" />
     <!--下部バーの中に表示するテキスト"F1 :確定"-->
     <!--下部バーの中に表示するテキスト"F4 :戻る"-->
+
+    <!--ただのテキスト-->
     <TextView
-        android:id="@+id/textView4"
+        android:id="@+id/textView555"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/sawarabi_gothic"
@@ -61,10 +63,11 @@
         android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="@+id/view2"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.479"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/view2" />
+        app:layout_constraintTop_toTopOf="@+id/view2"
+        app:layout_constraintVertical_bias="0.0" />
 
-    <!--ただのテキスト-->
     <TextView
         android:id="@+id/textView5"
         android:layout_width="wrap_content"
@@ -218,8 +221,10 @@
         android:text="F1:確定"
         android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="@+id/view2"
+        app:layout_constraintEnd_toStartOf="@+id/textView555"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/view2" />
+        app:layout_constraintTop_toTopOf="@+id/view2"
+        app:layout_constraintVertical_bias="0.125" />
 
     <TextView
         android:id="@+id/dbtest"

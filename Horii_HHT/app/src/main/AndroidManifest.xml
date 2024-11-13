@@ -47,6 +47,12 @@
         <activity
             android:name=".Nyuka02_KenpinStart"
             android:exported="true">
+            <intent-filter>
+                <action android:name="com.cipherlab.barcode.GeneralString.Intent_PASS_TO_APP" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="APP_SPECIFIC_BROADCAST" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
 
         </activity>
         <activity

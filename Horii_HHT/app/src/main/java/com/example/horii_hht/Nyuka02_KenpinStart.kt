@@ -10,6 +10,7 @@ import android.view.KeyEvent
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
@@ -20,12 +21,14 @@ import com.example.horii_hht.DB.Item
 import com.example.horii_hht.DB.ItemDAO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class Nyuka02_KenpinStart : AppCompatActivity() {
     private lateinit var db: AppDatabase
     private lateinit var dao: ItemDAO
     private lateinit var filter: IntentFilter
     private var readerManager: ReaderManager? = null
+    private var scannedData: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +45,6 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
         // BroadcastReceiverの登録
         registerReceiver(scanDataReceiver, filter)
 
-
         //商品点数テキスト
         val itemNum = findViewById<TextView>(R.id.real_itemNum)
         //商品総数テキスト
@@ -56,14 +58,16 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                 applicationContext,
                 AppDatabase::class.java,
                 "app_database"
-            ).fallbackToDestructiveMigration().build()
+            )
+                .fallbackToDestructiveMigration()
+                .build()
             dao = db.itemDAO()
 
             // データベースからデータを取得
             val distinctItemCount = dao.getDistinctItemCount()
             val totalSuryo = dao.getTotalSuryo()
             val kenpinNoValue = dao.getKenpinNo()
-
+            val check = dao.getItemCount()
             // UIスレッドでテキストビューに値を設定
             launch(Dispatchers.Main) {
                 itemNum.text = distinctItemCount.toString()
@@ -76,16 +80,8 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
         kenpinBtn.setOnClickListener {
             val intent = Intent(this, Nyuka03_Barread::class.java)
             startActivity(intent)
+            finish()
         }
-    }
-
-    // Activity破棄される時に呼び出されるライフサイクルメソッド
-    override fun onDestroy() {
-        super.onDestroy()
-        // BroadcastReceiverの解除
-        unregisterReceiver(scanDataReceiver)
-        // ReaderManagerの解放
-        readerManager?.Release()
     }
 
     // スキャン結果を受け取るBroadcastReceiver
@@ -93,74 +89,94 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
         override fun onReceive(context: Context, intent: Intent) {
             // インテントのアクションが GeneralString.Intent_PASS_TO_APP かどうかを確認
             if (intent.action == GeneralString.Intent_PASS_TO_APP) {
-                // スキャンデータを取得
-                var scannedData = intent.getStringExtra(GeneralString.BcReaderData)
-                Log.d("Nyuka01_QRread", "Scanned Data: $scannedData")
-                if (scannedData != null) {
-                        // スキャンデータをトーストで表示
-//                    if (!isFinishing) {
-//                        Toast.makeText(this@Nyuka02_KenpinStart, "成功: $scannedData", Toast.LENGTH_SHORT).show()
-//                    }
+                val receivedData = intent.getStringExtra(GeneralString.BcReaderData)
+                if (receivedData != null && receivedData != scannedData) {
+                    scannedData = receivedData
 
                     // 改行文字を削除
-                    val cleanedData = scannedData.replace("\n", "")
-
-                    // QRコードデータをパース
+                    val cleanedData = scannedData!!.replace("\n", "")
                     val dataParts = cleanedData.split(",")
-                    val validDataParts = dataParts.size / 8 * 8 // 8の倍数の要素数を取得
 
-                    for (i in 0 until validDataParts step 8) {
-                        val item = Item(
-                            id = 0, // autoGenerateなので0を設定
-                            kenpinNo = dataParts[i],
-                            itemCD = dataParts[i + 1],
-                            itemName = dataParts[i + 2],
-                            suryo = dataParts[i + 3].toInt(),
-                            in_q = dataParts[i + 4].toInt(),
-                            case_q = dataParts[i + 5].toInt(),
-                            JAN = dataParts[i + 6],
-                            ITF = dataParts[i + 7],
-                            zumi = 0
-                        )
+                    // 8の倍数のデータだけ処理
+                    val validDataParts = (dataParts.size / 8) * 8
+                    if (validDataParts >= 8) {
+                        for (i in 0 until validDataParts step 8) {
+                            val item = Item(
+                                id = 0,
+                                kenpinNo = dataParts[i],
+                                itemCD = dataParts[i + 1],
+                                itemName = dataParts[i + 2],
+                                suryo = dataParts[i + 3].toInt(),
+                                in_q = dataParts[i + 4].toInt(),
+                                case_q = dataParts[i + 5].toInt(),
+                                JAN = dataParts[i + 6],
+                                ITF = dataParts[i + 7],
+                                zumi = 0
+                            )
 
-                        // データベースにインサート
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            dao.insert(item)
-                            scannedData=null
+                            // 非同期処理
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                try {
+                                    // データベースにインサート
+                                    dao.insert(item)
+
+                                    // データ取得もバックグラウンドで行う
+                                    val distinctItemCount = dao.getDistinctItemCount() ?: 0
+                                    val totalSuryo = dao.getTotalSuryo() ?: 0
+                                    val kenpinNoValue = dao.getKenpinNo()
+
+                                    // UIスレッドで更新
+                                    withContext(Dispatchers.Main) {
+                                        val itemNum = findViewById<TextView>(R.id.real_itemNum)
+                                        val itemAll = findViewById<TextView>(R.id.real_itemAll)
+                                        val kenpinNo = findViewById<TextView>(R.id.kenpinNo)
+                                        itemNum.text = distinctItemCount.toString()
+                                        itemAll.text = totalSuryo.toString()
+                                        kenpinNo.text = kenpinNoValue ?: "N/A"
+                                    }
+
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                    Log.e("DatabaseError", "Error during insertion", e)  // 詳細なエラーメッセージをログに出力
+                                    withContext(Dispatchers.Main) {
+                                        AlertDialog.Builder(this@Nyuka02_KenpinStart)
+                                            .setTitle("エラー")
+                                            .setMessage("不正なQRコードです。")
+                                            .setPositiveButton("OK", null)
+                                            .show()
+                                    }
+                                }
+                            }
+
                         }
-
                     }
                 } else {
-                    // スキャンデータが取得できなかった場合はエラー
-                    if (!isFinishing) {
-                        Toast.makeText(this@Nyuka02_KenpinStart, "スキャンデータが取得できませんでした", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            } else {
-                // 意図しないアクションの場合はエラー
-                if (!isFinishing) {
-                    Toast.makeText(this@Nyuka02_KenpinStart, "意図しないアクション: ${intent.action}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@Nyuka02_KenpinStart,
+                        "スキャンデータが取得できませんでした",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
     }
 
 
-
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
             KeyEvent.KEYCODE_F7 -> {
-                // F7キーが押されたときDBリセットする処理
-                lifecycleScope.launch(Dispatchers.IO) {
-                    dao.deleteAllItems()
-                    val itemCount = dao.getTotalSuryo()
-                    launch(Dispatchers.Main) {
-                        //遷移するだけやとスレッド(scandata？)にデータが残っちゃってるからリセットしたはずのものもインサートされてる気がする
-                        if (itemCount == 0) {
-//                            Toast.makeText(this@Nyuka02_KenpinStart, "リセット完了しました。QRコードを読み直してください。", Toast.LENGTH_SHORT).show()
 
-                            val intent = Intent(this@Nyuka02_KenpinStart, Nyuka01_QRread::class.java)
-                            startActivity(intent)
+                lifecycleScope.launch(Dispatchers.IO) {
+                    scannedData = null
+                    dao.deleteAllItems()
+                    val distinctItemCount = dao.getDistinctItemCount() ?: 0
+                    val totalSuryo = dao.getTotalSuryo() ?: 0
+                    withContext(Dispatchers.Main) {
+                        if (distinctItemCount == 0 && totalSuryo == 0) {
+                            val itemNum = findViewById<TextView>(R.id.real_itemNum)
+                            val itemAll = findViewById<TextView>(R.id.real_itemAll)
+                            itemNum.text = distinctItemCount.toString()
+                            itemAll.text = totalSuryo.toString()
                         } else {
                             Toast.makeText(this@Nyuka02_KenpinStart, "リセットに失敗しました。", Toast.LENGTH_SHORT).show()
                         }
@@ -170,5 +186,13 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
             }
             else -> super.onKeyDown(keyCode, event)
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // BroadcastReceiverの解除
+        unregisterReceiver(scanDataReceiver)
+        // ReaderManagerの解放
+        readerManager?.Release()
     }
 }

@@ -4,7 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
@@ -12,12 +15,14 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
 import com.cipherlab.barcode.GeneralString
 import com.cipherlab.barcode.ReaderManager
 import com.example.horii_hht.DB.AppDatabase
+import com.example.horii_hht.DB.Item
 import com.example.horii_hht.DB.ItemDAO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,21 +36,20 @@ class Nyuka03_Barread: AppCompatActivity() {
     private var data: String? = null
     private lateinit var barcodedata: EditText
     private lateinit var tyudanbtn: Button
+    //画面ロックのフラグ
     private var isLocked: Boolean = false
+    //スキャンデータのソースを識別するためのフラグを設定
+    private var isScanner = false
+    // itemsをクラス変数として定義
+    private var items: List<Item> = mutableListOf()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka03)
+
         // ReaderManagerの初期化
         readerManager = ReaderManager.InitInstance(this)
-
-        // インテントフィルタの初期化（ハードウェアスキャンをサポート）
-        filter = IntentFilter().apply {
-            addAction(GeneralString.Intent_PASS_TO_APP) // ハードウェアスキャン用
-        }
-
-        // BroadcastReceiverの登録
-        registerReceiver(scanDataReceiver, filter)
-
+        barcodedata = findViewById(R.id.barcode)
 
         //商品総数テキスト
         val itemAll = findViewById<TextView>(R.id.itemAll)
@@ -61,7 +65,6 @@ class Nyuka03_Barread: AppCompatActivity() {
         val dbtest =findViewById<TextView>(R.id.dbtest)
         //作業中断ボタン
         tyudanbtn = findViewById<Button>(R.id.startbtn)
-        val Image = findViewById<android.widget.ImageView>(R.id.fullscreenImage)
 
         // 作業中断ボタンのクリックリスナー
         tyudanbtn.setOnClickListener {
@@ -69,17 +72,16 @@ class Nyuka03_Barread: AppCompatActivity() {
                 // 画面ロック解除
                 unlockScreen()
                 tyudanbtn.text = "作業中断"
+                tyudanbtn.setTextColor(Color.RED)
 
             } else {
                 // 画面ロック
                 lockScreen()
                 tyudanbtn.text = "作業再開"
-
-
+                tyudanbtn.setTextColor(Color.BLUE)
             }
             isLocked = !isLocked
         }
-
 
         // データベースの初期化
         lifecycleScope.launch(Dispatchers.IO) {
@@ -94,7 +96,7 @@ class Nyuka03_Barread: AppCompatActivity() {
             val distinctItemCount = dao.getDistinctItemCount()
             val totalSuryo = dao.getTotalSuryo()
             val kenpinNoValue = dao.getKenpinNo()
-            val getCountOfZumiItems = dao.getCountOfZumiItems()
+            val getCountOfZumiItems = dao.getCountOfMatchedItems()
             val getTotalZumiCount = dao.getTotalZumiCount()
 
             launch (Dispatchers.Main){
@@ -106,15 +108,133 @@ class Nyuka03_Barread: AppCompatActivity() {
             }
         }
 
+        // インテントフィルタの初期化（ハードウェアスキャンをサポート）
+        filter = IntentFilter().apply {
+            addAction(GeneralString.Intent_PASS_TO_APP) // ハードウェアスキャン用
+        }
+        // BroadcastReceiverの登録
+        registerReceiver(scanDataReceiver, filter)
+
+        // エディットテキストの入力監視
+        barcodedata.addTextChangedListener(object : TextWatcher {
+            //テキストが変更される直前に呼ばれる
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            //テキストが変更されてる最中に呼ばれる
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            //テキストが変更された直後に呼ばれる
+            override fun afterTextChanged(s: Editable?) {
+                // ハードウェアスキャンからの入力なら処理をスキップ
+                if (isScanner) {
+                    //フラグをリセットして次回以降の処理に備える
+                    isScanner = false
+                    //以降の処理を中断
+                    return
+                }
+                //ユーザーが入力したテキストを取得
+                val inputText = s.toString()
+                //入力されたテキストが13桁か14桁の数字であるかをチェック
+                if (isValidBarcode(inputText)) {
+                    //有効なバーコードの場合検索実行
+                    searchBarcodeAndNavigate(inputText)
+                }
+            }
+        })
+    }
+    // ハードウェアスキャン用の BroadcastReceiver
+    private val scanDataReceiver = object : BroadcastReceiver() {
+        //スキャン受信
+        override fun onReceive(context: Context, intent: Intent) {
+            //受信したインテントがスキャナからの入力用のアクションであるかどうか確認
+            if (intent.action == GeneralString.Intent_PASS_TO_APP) {
+                //スキャンされたデータを取得
+                data = intent.getStringExtra(GeneralString.BcReaderData)?.replace("\n", "") ?: ""
+                // スキャンされたデータが13桁か14桁か判定
+                if (isValidBarcode(data)) {
+                    //スキャナからの入力であることを示すフラグをtrueに変更
+                    isScanner = true
+                    //スキャンデータを表示
+                    barcodedata.setText(data)
+                    //有効なデータだった場合検索実行
+                    searchBarcodeAndNavigate(data!!)
+                } else {
+                    showAlertDialog("エラー", "コードが不正です")
+                }
+            }
+        }
     }
 
+    // 共通のバーコード検証関数(ITF or JANか調べる)
+    private fun isValidBarcode(barcode: String?): Boolean {
+        // nullチェックと13桁または14桁の数字であることを確認、改行は無視
+        return barcode?.replace("\n", "")?.matches(Regex("\\d{13,14}")) == true
+
+    }
+
+    // データベース検索と画面遷移の共通処理
+    private fun searchBarcodeAndNavigate(barcode: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            // バーコードが13桁ならJAN検索、14桁ならITF検索
+            items = if (barcode.length == 13) {
+                dao.getItemByCode(jan = barcode, itf = "")
+            } else {
+                dao.getItemByCode(jan = "", itf = barcode)
+            }
+        }
+    }
+    // エラーダイアログ表示の共通関数
+    private fun showAlertDialog(title: String, message: String) {
+        // ダイアログを表示
+        AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    // ファンクションキー入力処理
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        return when (keyCode) {
+            KeyEvent.KEYCODE_F4 -> {
+                // F4キーが押されたときの処理
+                val intent = Intent(this, Main_Menu::class.java)
+                startActivity(intent)
+                true
+            }
+            KeyEvent.KEYCODE_F1 -> {
+                //barcodedata.text=キーボードからの入力、空だったらスキャンデータを使う
+                val barcodeInput = barcodedata.text.toString().ifEmpty { data }
+                //バーコードが入力されているかチェック
+
+                if (barcodeInput != null) {
+                    if (barcodeInput.isNotEmpty()) {
+                        barcodeInput?.let { searchBarcodeAndNavigate(it) }
+                        val intent = Intent(this, Nyuka04_Num::class.java)
+                        intent.putExtra("barcode", barcodeInput)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        showAlertDialog("エラー", "有効なJANまたはITFコードを入力してください")
+
+                    }
+                }
+                true
+            }
+
+            KeyEvent.KEYCODE_F7 -> {
+                // F7キーが押されたときの処理
+                val intent = Intent(this, Nyuka02_KenpinStart::class.java)
+                startActivity(intent)
+                finish()
+                true
+            }
+            else -> super.onKeyDown(keyCode, event)
+        }
+    }
+
+
+    //画面ロック
     private fun lockScreen() {
-        // 画面をロックする
-//        window.setFlags(
-//            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-//            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-//        )
-        // 他のすべてのビューを無効にする例
+        // ボタン以外すべてのビューを無効にする（画面ロック）
         findViewById<View>(R.id.itemAll).isEnabled = false
         findViewById<View>(R.id.real_itemAll).isEnabled = false
         findViewById<View>(R.id.itemNum).isEnabled = false
@@ -122,12 +242,13 @@ class Nyuka03_Barread: AppCompatActivity() {
         findViewById<View>(R.id.kenpinNo).isEnabled = false
         findViewById<View>(R.id.dbtest).isEnabled = false
         findViewById<EditText>(R.id.barcode).isEnabled = false
-        // ボタン自体は無効化しない
+        // ボタンは無効化しない
         tyudanbtn.isEnabled = true
     }
 
+    //画面ロック解除
     private fun unlockScreen() {
-        // すべてのビューを有効にする例
+        // ボタン以外のすべてのビューを有効にする例
         findViewById<View>(R.id.itemAll).isEnabled = true
         findViewById<View>(R.id.real_itemAll).isEnabled = true
         findViewById<View>(R.id.itemNum).isEnabled = true
@@ -147,75 +268,6 @@ class Nyuka03_Barread: AppCompatActivity() {
         // ReaderManagerの解放
         readerManager?.Release()
     }
-    // スキャン結果を受け取るBroadcastReceiver
-    private val scanDataReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            // インテントのアクションが GeneralString.Intent_PASS_TO_APP かどうかを確認
-            if (intent.action == GeneralString.Intent_PASS_TO_APP) {
-                // スキャンされたデータを取得
-                data = intent.getStringExtra(GeneralString.BcReaderData)
-                if (data != null) {
-                    // エディットテキストにデータを表示
-                    barcodedata = findViewById<EditText>(R.id.barcode)
-//                    itemBar.setText("") // リセット
-                    barcodedata.setText(data)
-                } else {
-                    Toast.makeText(this@Nyuka03_Barread, "スキャンデータが取得できませんでした", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                Toast.makeText(this@Nyuka03_Barread, "意図しないアクション: ${intent.action}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        return when (keyCode) {
-            KeyEvent.KEYCODE_F4 -> {
-                // F4キーが押されたときの処理
-                val intent = Intent(this, Main_Menu::class.java)
-                startActivity(intent)
-                true
-            }
-            KeyEvent.KEYCODE_F1 -> {
-                // F1キーが押されたときの処理
-                if (data != null) {
-                    // 改行文字を削除
-                    val cleanedData = data!!.replace("\n", "")
-                    if (cleanedData.matches(Regex("\\d{13,14}"))) {
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            // データベース検索: 13桁ならJAN、14桁ならITFをクエリに使用
-                            val items = if (cleanedData.length == 13) {
-                                dao.getItemByCode(jan = cleanedData, itf = "")
-                            } else {
-                                dao.getItemByCode(jan = "", itf = cleanedData)
-                            }
 
-                            // メインスレッドでUI更新や画面遷移を行う
-                            withContext(Dispatchers.Main) {
-                                if (items.isNotEmpty()) {
-                                    // 次の画面へ遷移
-                                    val nextIntent = Intent(this@Nyuka03_Barread, Nyuka04_Num::class.java)
-                                    // スキャンデータを次の画面に渡す
-                                    nextIntent.putExtra("SCANNED_DATA", cleanedData)
-                                    startActivity(nextIntent)
-                                } else {
-                                    Toast.makeText(this@Nyuka03_Barread, "商品がデータベースに存在しません", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }
-                    } else {
-                        Toast.makeText(this@Nyuka03_Barread, "コードの形式が正しくないか、スキャンデータが存在しません", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    Toast.makeText(this@Nyuka03_Barread, "スキャンデータが存在しません", Toast.LENGTH_SHORT).show()
-                }
-                true
-            }
-            KeyEvent.KEYCODE_F7 -> {
-                barcodedata.setText("")
-                true
-            }
-            else -> super.onKeyDown(keyCode, event)
-        }
-    }
 }

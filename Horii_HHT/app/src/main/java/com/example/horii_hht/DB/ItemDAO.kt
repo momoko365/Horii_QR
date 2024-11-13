@@ -35,12 +35,31 @@ fun getTotalSuryo(): Int
     @Query("SELECT * FROM ITEM WHERE jan = :jan OR itf = :itf LIMIT 1")
    fun getItemCode(jan: String, itf: String): Item?
 
+   @Query("SELECT * FROM Item WHERE suryo - zumi > 0")
+    fun getUnfinishedItems(): List<Item>
+
+    @Query("SELECT * FROM Item WHERE kenpinNo = :kenpinNo")
+    fun getItemsByKenpinNo(kenpinNo: String): List<Item>
+
     @Update
     fun update(item: Item)
 
+    @Query("SELECT count(*) FROM Item")
+    fun getItemCount(): Int
 
     @Query("DELETE FROM Item")
     fun deleteAllItems()
+
+    @Query("""
+    SELECT COUNT(*)
+    FROM (
+        SELECT itemCD
+        FROM Item
+        GROUP BY itemCD
+        HAVING SUM(suryo) = SUM(zumi)
+    ) AS matched_items
+""")
+    fun getCountOfMatchedItems(): Int
 
 //    @Query("""    SELECT COUNT(*)
 //    FROM Item i1

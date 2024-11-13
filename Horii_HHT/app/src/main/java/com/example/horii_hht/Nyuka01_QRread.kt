@@ -49,8 +49,6 @@ class Nyuka01_QRread : AppCompatActivity() {
         // BroadcastReceiverの登録（スキャンデータのブロードキャスト受信準備）
         registerReceiver(scanDataReceiver, filter)
 
-
-
         // データベースの初期化
         lifecycleScope.launch {
             db = Room.databaseBuilder(
@@ -63,31 +61,26 @@ class Nyuka01_QRread : AppCompatActivity() {
         }
     }
 
-    // Activity破棄される時に呼び出されるライフサイクルメソッド
-    override fun onDestroy() {
-        super.onDestroy()
-        // BroadcastReceiverの解除
-        unregisterReceiver(scanDataReceiver)
-        // ReaderManagerの解放
-        readerManager?.Release()
-    }
-
     // スキャン結果を受け取るBroadcastReceiver
     private val scanDataReceiver = object : BroadcastReceiver() {
+//インテントを受信したときの処理を定義
         override fun onReceive(context: Context, intent: Intent) {
+            // インテントのアクションが GeneralString.Intent_PASS_TO_APP かどうかを確認
             when (intent.action) {
                 GeneralString.Intent_PASS_TO_APP -> { // ハードウェアスキャンのデータ
-                    val scannedData = intent.getStringExtra(GeneralString.BcReaderData)
+                    // スキャンデータを取得
+                    var scannedData = intent.getStringExtra(GeneralString.BcReaderData)
+
                     if (scannedData != null) {
                         // 取得したスキャンデータがnullでない場合
                         // 改行文字を削除
-                        val cleanedData = scannedData.replace("\n", "")
+                        var cleanedData = scannedData.replace("\n", "")
 
                         // QRコードデータをカンマ区切りでパース
-                        val dataParts = cleanedData.split(",")
-                        val validDataParts = dataParts.size / 8 * 8 // 8の倍数の要素数を取得
-
-                        for (i in 0 until validDataParts step 8) {
+                        var dataParts = cleanedData.split(",")
+                        var validDataParts = (dataParts.size / 8)*8  // 8の倍数の要素数を取得
+// 8の倍数の要素ごとにデータを処理
+                        for (i in 0 until  validDataParts step 8) {
                             val item = Item(
                                 id = 0, // autoGenerateなので0を設定
                                 kenpinNo = dataParts[i],
@@ -105,9 +98,14 @@ class Nyuka01_QRread : AppCompatActivity() {
                             lifecycleScope.launch(Dispatchers.IO) {
                                 try {
                                     dao.insert(item)
+                                    scannedData = null
+                                    dataParts = emptyList()
+                                    cleanedData = ""
+
                                     // 次の画面に遷移
                                     val nextIntent = Intent(this@Nyuka01_QRread, Nyuka02_KenpinStart::class.java)
                                     startActivity(nextIntent)
+                                    finish()
                                 } catch (e: Exception) {
                                     e.printStackTrace()
                                     runOnUiThread {
@@ -155,5 +153,14 @@ class Nyuka01_QRread : AppCompatActivity() {
             }
             else -> super.onKeyDown(keyCode, event)
         }
+    }
+
+    // Activity破棄される時に呼び出されるライフサイクルメソッド
+    override fun onDestroy() {
+        super.onDestroy()
+        // BroadcastReceiverの解除
+        unregisterReceiver(scanDataReceiver)
+        // ReaderManagerの解放
+        readerManager?.Release()
     }
 }
