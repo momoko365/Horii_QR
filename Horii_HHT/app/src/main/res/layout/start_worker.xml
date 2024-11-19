@@ -87,6 +87,7 @@
         android:textSize="34sp"
         android:textAlignment="textEnd"
         app:layout_constraintEnd_toEndOf="parent"
+        android:maxLength="10"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView5" />
 

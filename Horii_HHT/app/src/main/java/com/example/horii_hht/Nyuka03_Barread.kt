@@ -51,18 +51,22 @@ class Nyuka03_Barread: AppCompatActivity() {
         readerManager = ReaderManager.InitInstance(this)
         barcodedata = findViewById(R.id.barcode)
 
-        //商品総数テキスト
-        val itemAll = findViewById<TextView>(R.id.itemAll)
-        //商品総数済み数テキスト
-        val real_itemAll = findViewById<TextView>(R.id.real_itemAll)
+        //ｹｰｽ数テキスト
+        val caseAll = findViewById<TextView>(R.id.itemAll)
+        //ケース数済み数テキスト
+        val casezumiAll = findViewById<TextView>(R.id.real_itemAll)
+        //バラ数テキスト
+        val baraAll = findViewById<TextView>(R.id.baraall)
+        //バラ数済み数テキスト
+        val barazumiAll = findViewById<TextView>(R.id.barazumi)
+
         //商品点数テキスト
         val itemNum = findViewById<TextView>(R.id.itemNum)
         //商品点数済み数テキスト
         val real_itemNum = findViewById<TextView>(R.id.real_itemNum)
         //検品番号テキスト
         val kenpinNo = findViewById<TextView>(R.id.kenpinNo)
-        //DBの中身チェックするためだけのテキスト
-        val dbtest =findViewById<TextView>(R.id.dbtest)
+
         //作業中断ボタン
         tyudanbtn = findViewById<Button>(R.id.startbtn)
 
@@ -79,6 +83,7 @@ class Nyuka03_Barread: AppCompatActivity() {
                 lockScreen()
                 tyudanbtn.text = "作業再開"
                 tyudanbtn.setTextColor(Color.BLUE)
+                disableEditText()
             }
             isLocked = !isLocked
         }
@@ -93,18 +98,26 @@ class Nyuka03_Barread: AppCompatActivity() {
             dao = db.itemDAO()
 
             // データベースからデータを取得
-            val distinctItemCount = dao.getDistinctItemCount()
-            val totalSuryo = dao.getTotalSuryo()
-            val kenpinNoValue = dao.getKenpinNo()
-            val getCountOfZumiItems = dao.getCountOfMatchedItems()
-            val getTotalZumiCount = dao.getTotalZumiCount()
+            val kenpinNoValue = dao.getKenpinNo() //検品番号
+            val distinctItemCount = dao.getDistinctItemCount() //商品点数
+//            val getCountOfZumiItems = dao.getCountOfMatchedItems() //商品点数済み数
+            val caseTotal = dao.getTotalCase() //ケース数
+            val casezumiTotal = dao.getCasezumi() //ケース数済み数
+            val baraTotal = dao.getTotalBara() //バラ数
+            val barazumiTotal = dao.getBarazumi() //バラ数済み数
+
 
             launch (Dispatchers.Main){
-                real_itemNum.text = getCountOfZumiItems.toString()
-                itemNum.text = distinctItemCount.toString()
-                real_itemAll.text = getTotalZumiCount.toString()
-                itemAll.text = totalSuryo.toString()
-                kenpinNo.text = kenpinNoValue
+                kenpinNo.text = kenpinNoValue //検品番号
+                itemNum.text = distinctItemCount.toString() //商品点数
+//                real_itemNum.text = getCountOfZumiItems.toString() //商品点数済み数
+                caseAll.text = caseTotal.toString() //ケース数
+                casezumiAll.text = casezumiTotal.toString() //ケース数済み数
+                baraAll.text = baraTotal.toString() //バラ数
+                barazumiAll.text = barazumiTotal.toString() //バラ数済み数
+
+
+
             }
         }
 
@@ -240,7 +253,7 @@ class Nyuka03_Barread: AppCompatActivity() {
         findViewById<View>(R.id.itemNum).isEnabled = false
         findViewById<View>(R.id.real_itemNum).isEnabled = false
         findViewById<View>(R.id.kenpinNo).isEnabled = false
-        findViewById<View>(R.id.dbtest).isEnabled = false
+
         findViewById<EditText>(R.id.barcode).isEnabled = false
         // ボタンは無効化しない
         tyudanbtn.isEnabled = true
@@ -254,7 +267,7 @@ class Nyuka03_Barread: AppCompatActivity() {
         findViewById<View>(R.id.itemNum).isEnabled = true
         findViewById<View>(R.id.real_itemNum).isEnabled = true
         findViewById<View>(R.id.kenpinNo).isEnabled = true
-        findViewById<View>(R.id.dbtest).isEnabled = true
+
         findViewById<EditText>(R.id.barcode).isEnabled = true
         // ボタンは引き続き有効
         tyudanbtn.isEnabled = true
@@ -268,6 +281,20 @@ class Nyuka03_Barread: AppCompatActivity() {
         // ReaderManagerの解放
         readerManager?.Release()
     }
+    // EditTextの入力を無効にするメソッド
+    private fun disableEditText() {
+        barcodedata.isEnabled = false // 入力を無効化
+        barcodedata.isFocusable = false // フォーカスを無効化
+        barcodedata.isFocusableInTouchMode = false // タッチによるフォーカスを無効化
+        barcodedata.clearFocus() // フォーカスをクリア
+    }
 
-
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        // isLocked が true の場合、すべてのキー入力を無効化
+        if (isLocked) {
+            return true // すべてのキーイベントを無効化
+        }
+        // ロックされていない場合は通常のキー処理
+        return super.dispatchKeyEvent(event)
+    }
 }

@@ -14,16 +14,15 @@ data class Item(
     //10桁
     val itemName: String,
     //４桁
-    val suryo:Int,
-    //４桁
-    val in_q:Int,
-    //４桁
     val case_q:Int,
+    //４桁
+    val bara :Int,
     //13桁
     val JAN:String,
     //14桁
     val ITF:String,
-    val zumi : Int,
+    val casezumi : Int,
 
+    val barazumi : Int
 ) {
 }

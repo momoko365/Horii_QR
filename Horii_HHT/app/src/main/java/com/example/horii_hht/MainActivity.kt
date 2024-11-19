@@ -21,6 +21,7 @@ class MainActivity : AppCompatActivity() {
         val monthEditText = findViewById<EditText>(R.id.month)
         val dayEditText = findViewById<EditText>(R.id.day)
 
+
         // 今日の日付を取得
         val calendar = Calendar.getInstance()
         val year = calendar.get(Calendar.YEAR)
@@ -31,6 +32,10 @@ class MainActivity : AppCompatActivity() {
         yearEditText.setText(year.toString())
         monthEditText.setText(month.toString())
         dayEditText.setText(day.toString())
+
+        yearEditText.setSelection(yearEditText.text.length) // カーソルを末尾に移動
+        monthEditText.setSelection(monthEditText.text.length) // カーソルを末尾に移動
+        dayEditText.setSelection(dayEditText.text.length) // カーソルを末尾に移動
 
 //入力後エンターでフォーカス移動
         yearEditText.setOnKeyListener { v, keyCode, event ->
@@ -67,16 +72,11 @@ class MainActivity : AppCompatActivity() {
         return when (keyCode) {
             KeyEvent.KEYCODE_F1 -> {
                 // F1キーが押されたときの処理
-//                Toast.makeText(this, "押されたよ", Toast.LENGTH_SHORT).show()
                 val intent = Intent(this, Start_Worker::class.java)
                 startActivity(intent)
                 true
             }
-//            KeyEvent.KEYCODE_F4 -> {
-//                // F4キーが押されたときの処理
-//                finish()
-//                true
-//            }
+
             else -> super.onKeyDown(keyCode, event)
         }
     }

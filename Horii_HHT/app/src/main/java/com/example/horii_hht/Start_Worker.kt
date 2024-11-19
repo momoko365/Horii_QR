@@ -22,11 +22,24 @@ import kotlinx.coroutines.withContext
 class Start_Worker : AppCompatActivity() {
 private  lateinit var db: AppDatabase
 private lateinit var dao: WorkerDAO
+private lateinit var workerCDEditText: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.start_worker)
+
+        // workerCDEditTextを初期化
+        workerCDEditText = findViewById<EditText>(R.id.workerCD)
+
+        workerCDEditText.setOnKeyListener { v, keyCode, event ->
+     if (keyCode == KeyEvent.KEYCODE_SPACE) {
+         // スペースキーの入力を無効にする
+         true
+     } else {
+         false
+     }
+ }
 
         // データベースの初期化
        lifecycleScope.launch {
@@ -43,20 +56,16 @@ private lateinit var dao: WorkerDAO
                    // 初期データを挿入
                    val initialWorker = Worker("1" ,"John Doe")
                    dao.insert(initialWorker)
-
            }
-
            }
        }
-
-        val workerCD = findViewById<EditText>(R.id.workerCD)
-
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
             KeyEvent.KEYCODE_F1 -> {
-                val workerCDEditText = findViewById<EditText>(R.id.workerCD)
+                workerCDEditText = findViewById<EditText>(R.id.workerCD)
+                workerCDEditText.setSelection(workerCDEditText.text.length) // カーソルを末尾に移動
                 val inputWorkerCD = workerCDEditText.text.toString()
                 lifecycleScope.launch {
                     val worker = withContext(Dispatchers.IO) { dao.getWorkerCD(inputWorkerCD) }
@@ -64,22 +73,15 @@ private lateinit var dao: WorkerDAO
                         // workerCDが合致した場合、画面遷移
                         val intent = Intent(this@Start_Worker, Main_Menu::class.java)
                         startActivity(intent)
+                        finish()
                     } else {
                         // workerCDが合致しない場合、ダイアログ表示
                         val dialog = AlertDialog.Builder(this@Start_Worker)
                             .setTitle("エラー")
                             .setMessage("コードの誤りです")
-                            .setPositiveButton("F2:OK", null)
+                            .setPositiveButton("OK", null)
                             .create()
-
-                        dialog.setOnKeyListener { _, keyCode, _ ->
-                            if (keyCode == KeyEvent.KEYCODE_F2) {
-                                dialog.dismiss()
                                 true
-                    }else {
-                                false
-                            }
-                        }
                         dialog.show()
                     }
                 }
@@ -89,6 +91,7 @@ private lateinit var dao: WorkerDAO
                 // F4キーが押されたときの処理
                 val intent = Intent(this, MainActivity::class.java)
                 startActivity(intent)
+                finish()
                 true
             }
             else -> super.onKeyDown(keyCode, event)

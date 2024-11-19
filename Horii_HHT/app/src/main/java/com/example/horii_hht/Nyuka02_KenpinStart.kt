@@ -47,8 +47,10 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
 
         //商品点数テキスト
         val itemNum = findViewById<TextView>(R.id.real_itemNum)
-        //商品総数テキスト
-        val itemAll = findViewById<TextView>(R.id.real_itemAll)
+        //ケース数テキスト
+        val caseAll = findViewById<TextView>(R.id.real_itemAll)
+        //バラ数テキスト
+        val baraAll = findViewById<TextView>(R.id.realbara)
         //検品番号テキスト
         val kenpinNo = findViewById<TextView>(R.id.kenpinNo)
 
@@ -65,13 +67,15 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
 
             // データベースからデータを取得
             val distinctItemCount = dao.getDistinctItemCount()
-            val totalSuryo = dao.getTotalSuryo()
+            val totalCase = dao.getTotalCase()
+            val totalBara = dao.getTotalBara()
             val kenpinNoValue = dao.getKenpinNo()
             val check = dao.getItemCount()
             // UIスレッドでテキストビューに値を設定
             launch(Dispatchers.Main) {
                 itemNum.text = distinctItemCount.toString()
-                itemAll.text = totalSuryo.toString()
+                caseAll.text = totalCase.toString()
+                baraAll.text = totalBara.toString()
                 kenpinNo.text = kenpinNoValue ?: "N/A"
             }
         }
@@ -87,7 +91,6 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
     // スキャン結果を受け取るBroadcastReceiver
     private val scanDataReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            // インテントのアクションが GeneralString.Intent_PASS_TO_APP かどうかを確認
             if (intent.action == GeneralString.Intent_PASS_TO_APP) {
                 val receivedData = intent.getStringExtra(GeneralString.BcReaderData)
                 if (receivedData != null && receivedData != scannedData) {
@@ -97,47 +100,57 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                     val cleanedData = scannedData!!.replace("\n", "")
                     val dataParts = cleanedData.split(",")
 
-                    // 8の倍数のデータだけ処理
-                    val validDataParts = (dataParts.size / 8) * 8
-                    if (validDataParts >= 8) {
-                        for (i in 0 until validDataParts step 8) {
+                    // データ挿入用のリスト
+                    val itemsToInsert = mutableListOf<Item>()
+
+                    // 7の倍数のデータだけ処理
+                    val validDataParts = (dataParts.size / 7) * 7
+                    var dataInserted = false // フラグを追加
+
+                    if (validDataParts >= 7) {
+                        for (i in 0 until validDataParts step 7) {
                             val item = Item(
                                 id = 0,
                                 kenpinNo = dataParts[i],
                                 itemCD = dataParts[i + 1],
                                 itemName = dataParts[i + 2],
-                                suryo = dataParts[i + 3].toInt(),
-                                in_q = dataParts[i + 4].toInt(),
-                                case_q = dataParts[i + 5].toInt(),
-                                JAN = dataParts[i + 6],
-                                ITF = dataParts[i + 7],
-                                zumi = 0
+                                case_q = dataParts[i + 3].toInt(),
+                                bara = dataParts[i + 4].toInt(),
+                                JAN = dataParts[i + 5],
+                                ITF = dataParts[i + 6],
+                                casezumi = 0,
+                                barazumi = 0
                             )
+                           itemsToInsert.add(item)
 
                             // 非同期処理
                             lifecycleScope.launch(Dispatchers.IO) {
                                 try {
                                     // データベースにインサート
-                                    dao.insert(item)
+                                    dao.insert(itemsToInsert)
+                                    dataInserted = true // データが挿入されたことを記録
 
                                     // データ取得もバックグラウンドで行う
-                                    val distinctItemCount = dao.getDistinctItemCount() ?: 0
-                                    val totalSuryo = dao.getTotalSuryo() ?: 0
+                                    val distinctItemCount = dao.getDistinctItemCount()
+                                    val totalCase = dao.getTotalCase()
+                                    val totalBara = dao.getTotalBara()
                                     val kenpinNoValue = dao.getKenpinNo()
 
                                     // UIスレッドで更新
                                     withContext(Dispatchers.Main) {
                                         val itemNum = findViewById<TextView>(R.id.real_itemNum)
-                                        val itemAll = findViewById<TextView>(R.id.real_itemAll)
+                                        val caseAll = findViewById<TextView>(R.id.real_itemAll)
+                                        val baraAll = findViewById<TextView>(R.id.realbara)
                                         val kenpinNo = findViewById<TextView>(R.id.kenpinNo)
                                         itemNum.text = distinctItemCount.toString()
-                                        itemAll.text = totalSuryo.toString()
+                                        caseAll.text = totalCase.toString()
+                                        baraAll.text = totalBara.toString()
                                         kenpinNo.text = kenpinNoValue ?: "N/A"
                                     }
 
                                 } catch (e: Exception) {
                                     e.printStackTrace()
-                                    Log.e("DatabaseError", "Error during insertion", e)  // 詳細なエラーメッセージをログに出力
+                                    Log.e("DatabaseError", "Error during insertion", e)
                                     withContext(Dispatchers.Main) {
                                         AlertDialog.Builder(this@Nyuka02_KenpinStart)
                                             .setTitle("エラー")
@@ -147,19 +160,29 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                                     }
                                 }
                             }
-
                         }
+
+                        // ループ終了後に画面遷移を行う
+                        if (dataInserted) {
+                            lifecycleScope.launch(Dispatchers.Main) {
+                                val nextIntent = Intent(this@Nyuka02_KenpinStart, Nyuka02_KenpinStart::class.java)
+                                startActivity(nextIntent)
+                                finish()
+                            }
+                        }
+
+                    } else {
+                        Toast.makeText(
+                            this@Nyuka02_KenpinStart,
+                            "スキャンデータが取得できませんでした",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-                } else {
-                    Toast.makeText(
-                        this@Nyuka02_KenpinStart,
-                        "スキャンデータが取得できませんでした",
-                        Toast.LENGTH_SHORT
-                    ).show()
                 }
             }
         }
     }
+
 
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -170,9 +193,10 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                     scannedData = null
                     dao.deleteAllItems()
                     val distinctItemCount = dao.getDistinctItemCount() ?: 0
-                    val totalSuryo = dao.getTotalSuryo() ?: 0
+                    val totalSuryo = dao.getTotalCase() ?: 0
+                    val totalBara = dao.getTotalBara() ?: 0
                     withContext(Dispatchers.Main) {
-                        if (distinctItemCount == 0 && totalSuryo == 0) {
+                        if (distinctItemCount == 0 && totalSuryo == 0 && totalBara == 0) {
                             val itemNum = findViewById<TextView>(R.id.real_itemNum)
                             val itemAll = findViewById<TextView>(R.id.real_itemAll)
                             itemNum.text = distinctItemCount.toString()
@@ -181,7 +205,15 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                             Toast.makeText(this@Nyuka02_KenpinStart, "リセットに失敗しました。", Toast.LENGTH_SHORT).show()
                         }
                     }
+                    withContext(Dispatchers.Main) {
+                        val intent = Intent(this@Nyuka02_KenpinStart, Nyuka01_QRread::class.java)
+                        startActivity(intent)
+                        finish()
+
+                    }
                 }
+
+
                 true
             }
             else -> super.onKeyDown(keyCode, event)

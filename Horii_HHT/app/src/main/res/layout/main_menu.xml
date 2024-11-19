@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <!--    上部バー-->
+
+    <!-- Upper bar -->
     <View
         android:id="@+id/view"
         android:layout_width="0dp"
@@ -13,7 +14,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-    <!--上部バーの中に表示するテキスト"作業者入力"-->
+
+    <!-- Text inside upper bar -->
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
@@ -27,7 +29,8 @@
         app:layout_constraintBottom_toBottomOf="@+id/view"
         app:layout_constraintStart_toStartOf="@+id/view"
         app:layout_constraintTop_toTopOf="@+id/view" />
-    <!--下部バー-->
+
+    <!-- Lower bar -->
     <View
         android:id="@+id/view2"
         android:layout_width="0dp"
@@ -36,12 +39,14 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
-    <!--下部バーの中に表示するテキスト"F1 :確定"-->
-    <!--下部バーの中に表示するテキスト"F4 :戻る"-->
+
+    <!-- Text inside lower bar -->
     <TextView
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:layout_marginEnd="24dp"
         android:fontFamily="@font/sawarabi_gothic"
         android:text="F4:戻る"
@@ -50,12 +55,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/view2" />
 
+    <!-- Buttons -->
     <Button
         android:id="@+id/nyukabtn"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="100dp"
         android:layout_marginEnd="8dp"
         android:background="@drawable/button_background"
         android:fontFamily="@font/sawarabi_gothic"
@@ -64,16 +69,15 @@
         android:textSize="34sp"
         app:backgroundTint="@null"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view" />
+        app:layout_constraintTop_toBottomOf="@+id/view"
+        app:layout_constraintBottom_toTopOf="@+id/syukkabtn" />
 
     <Button
         android:id="@+id/syukkabtn"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="200dp"
         android:layout_marginEnd="8dp"
         android:background="@drawable/button_background"
         android:fontFamily="@font/sawarabi_gothic"
@@ -82,16 +86,15 @@
         android:textSize="34sp"
         app:backgroundTint="@null"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view" />
+        app:layout_constraintTop_toBottomOf="@+id/nyukabtn"
+        app:layout_constraintBottom_toTopOf="@+id/tanaoroshibtn" />
 
     <Button
         android:id="@+id/tanaoroshibtn"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="300dp"
         android:layout_marginEnd="8dp"
         android:background="@drawable/button_background"
         android:fontFamily="@font/sawarabi_gothic"
@@ -100,17 +103,15 @@
         android:textSize="34sp"
         app:backgroundTint="@null"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view" />
+        app:layout_constraintTop_toBottomOf="@+id/syukkabtn"
+        app:layout_constraintBottom_toTopOf="@+id/checkbtn" />
 
     <Button
         android:id="@+id/checkbtn"
-
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="400dp"
         android:layout_marginEnd="8dp"
         android:background="@drawable/button_background"
         android:fontFamily="@font/sawarabi_gothic"
@@ -119,8 +120,8 @@
         android:textSize="34sp"
         app:backgroundTint="@null"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view" />
+        app:layout_constraintTop_toBottomOf="@+id/tanaoroshibtn"
+        app:layout_constraintBottom_toTopOf="@+id/view2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

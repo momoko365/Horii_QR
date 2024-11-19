@@ -25,6 +25,7 @@ import java.io.File
 import java.io.FileWriter
 import android.Manifest
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 
 import java.io.IOException
 
@@ -34,35 +35,43 @@ class Nyuka04_Num : AppCompatActivity() {
     private var item: Item? = null // クラス変数として宣言
     private lateinit var caseNum: EditText
     private lateinit var baraNum: EditText
+    private lateinit var scannedData: String
+
+
     // 外部ストレージへの書き込みパーミッションのリクエスト要求
     companion object {
         private const val REQUEST_WRITE_PERMISSION = 100
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka04)
 
         // Intentで全画面からデータを取得
-        val scannedData = intent.getStringExtra("barcode")
+        scannedData = intent.getStringExtra("barcode").toString()
 
-        //商品総数テキスト
-        val itemAll = findViewById<android.widget.TextView>(R.id.itemAll)
-        //商品総数済み数テキスト
-        val real_itemAll = findViewById<android.widget.TextView>(R.id.real_itemAll)
+        //検品番号テキスト
+        val kenpinNo = findViewById<android.widget.TextView>(R.id.kenpinNo)
         //商品点数テキスト
         val itemNum = findViewById<android.widget.TextView>(R.id.itemNum)
         //商品点数済み数テキスト
         val real_itemNum = findViewById<android.widget.TextView>(R.id.real_itemNum)
-        //検品番号テキスト
-        val kenpinNo = findViewById<android.widget.TextView>(R.id.kenpinNo)
+        //ケース数テキスト
+        val caseAll = findViewById<android.widget.TextView>(R.id.itemAll)
+        //ケース済み数テキスト
+        val casezumi = findViewById<android.widget.TextView>(R.id.real_itemAll)
+        //バラ数テキスト
+        val baraAll = findViewById<android.widget.TextView>(R.id.barareal)
+        //バラ済み数テキスト
+        val barazumi = findViewById<android.widget.TextView>(R.id.barazumi)
+
+
         //商品名テキスト
         val itemName = findViewById<android.widget.TextView>(R.id.itemname)
         //ケース数入力
         caseNum = findViewById<android.widget.EditText>(R.id.barcode)
         //バラ数入力
-         baraNum = findViewById<android.widget.EditText>(R.id.baraNum)
+        baraNum = findViewById<android.widget.EditText>(R.id.baraNum)
         //次へボタン
         val nextbtn = findViewById<Button>(R.id.startbtn)
         //完了ボタン
@@ -70,28 +79,13 @@ class Nyuka04_Num : AppCompatActivity() {
 
         // 次へボタンクリックした時の処理
         nextbtn.setOnClickListener {
-            lifecycleScope.launch(Dispatchers.IO) {
-                // データベースからバーコードが一致するアイテムを取得
-                item = scannedData?.let { it1 -> dao.getItemCode(jan = it1, itf = "") }
-                // ケース数の入力処理
-                val caseNumValue = caseNum.text.toString().toIntOrNull()
-                if (caseNumValue != null && item != null) {
-                    // ケース数の合計を計算しデータベースに更新
-                    val totalCaseNum = caseNumValue * item!!.in_q + item!!.zumi
-                    // `zumi` に登録する処理をここに追加
-                    dao.update(item!!.copy(zumi = totalCaseNum))
-                }
-                // バラ数の入力処理
-                val baraNumValue = baraNum.text.toString().toIntOrNull()
-                if (baraNumValue != null) {
-                    // `zumi` に登録する処理をここに追加
-                    item?.let { dao.update(it.copy(zumi = baraNumValue + it.zumi)) }
-                }
-                // メインスレッドで画面遷移を行う
-                launch(Dispatchers.Main) {
-                    val intent = Intent(this@Nyuka04_Num, Nyuka03_Barread::class.java)
-                    startActivity(intent)
-                }
+            lifecycleScope.launch {
+                // 非同期処理が完了するまで待つ
+                nextBtnClick(kenpinNo.text.toString())
+                // 非同期処理が完了した後に画面遷移
+                val intent = Intent(this@Nyuka04_Num, Nyuka03_Barread::class.java)
+                startActivity(intent)
+                finish()
             }
         }
 
@@ -112,22 +106,25 @@ class Nyuka04_Num : AppCompatActivity() {
                 null
             }
             // データベースからデータを取得
-            val distinctItemCount = dao.getDistinctItemCount()
-            val totalSuryo = dao.getTotalSuryo()
-            val kenpinNoValue = dao.getKenpinNo()
-            val getCountOfZumiItems = dao.getCountOfZumiItems()
-            val getTotalZumiCount = dao.getTotalZumiCount()
+            val kenpinNoValue = dao.getKenpinNo() // 検品番号
+            val distinctItemCount = dao.getDistinctItemCount() // 商品点数
+//            val getCountOfZumiItems = dao.getCountOfMatchedItems() // 検品終了している商品の数
+            val caseTotal = dao.getTotalCase() // ケース数
+            val casezumiTotal = dao.getCasezumi() // ケース済み数
+            val baraTotal = dao.getTotalBara() // バラ数
+            val barazumiTotal = dao.getBarazumi() // バラ済み数
+
 
             //UIの更新処理
-            launch (Dispatchers.Main){
-                real_itemNum.text = getCountOfZumiItems.toString()
-                itemNum.text = distinctItemCount.toString()
-                real_itemAll.text = getTotalZumiCount.toString()
-                itemAll.text = totalSuryo.toString()
-                kenpinNo.text = kenpinNoValue
-                // 商品名をテキストビューに表示
-                itemName.text = item?.itemName ?: "商品が見つかりません"
-
+            launch(Dispatchers.Main) {
+                kenpinNo.text = kenpinNoValue // 検品番号を表示
+                itemNum.text = distinctItemCount.toString() // 商品点数を表示
+//                real_itemNum.text = getCountOfZumiItems.toString() // 検品終了している商品の数を表示
+                caseAll.text = caseTotal.toString() // ケース数を表示
+                casezumi.text = casezumiTotal.toString() // ケース済み数を表示
+                baraAll.text = baraTotal.toString() // バラ数を表示
+                barazumi.text = barazumiTotal.toString() // バラ済み数を表示
+                itemName.text = item?.itemName ?: "商品が見つかりません" // 商品名をテキストビューに表示
             }
         }
 
@@ -203,7 +200,7 @@ class Nyuka04_Num : AppCompatActivity() {
                 FileWriter(csvFile).use { writer ->  //useはwriterオブジェクト使用後クローズ処理を自動で行う
                     CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(*Item::class.java.declaredFields.map { it.name }.toTypedArray())).use { csvPrinter -> //CSVPrinterはCSVフォーマットに従った書き込みを簡単に実行してくれる
                         for (item in items) {
-                            csvPrinter.printRecord(item.itemCD, item.itemName, item.suryo, item.in_q, item.case_q, item.JAN, item.ITF, item.zumi)
+//                            csvPrinter.printRecord(item.itemCD, item.itemName, item.suryo, item.in_q, item.case_q, item.JAN, item.ITF, item.zumi)
                         }
                     }
                 }
@@ -221,6 +218,13 @@ class Nyuka04_Num : AppCompatActivity() {
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
+            KeyEvent.KEYCODE_F1 -> {
+//                nextBtnClick(kenpinNo.text.toString())
+                // F1キーが押されたときの処理
+                val intent = Intent(this, Nyuka01_QRread::class.java)
+                startActivity(intent)
+                true
+            }
             // F4キーが押されたとき前画面に戻る処理
             KeyEvent.KEYCODE_F4 -> {
                 val intent = Intent(this, Nyuka03_Barread::class.java)
@@ -234,10 +238,74 @@ class Nyuka04_Num : AppCompatActivity() {
                 finish()
                 true
             }
-
             else -> super.onKeyDown(keyCode, event)
         }
-
-
     }
-}
+
+    // 非同期処理を行う関数を suspend に変更
+    private suspend fun nextBtnClick(kenpinNo: String) {
+        withContext(Dispatchers.IO) {
+            // 前画面から受け取ったデータを引数にして検品ナンバーを取得
+            val kenpinNoData = dao.getKenpinNoByBarcode(scannedData)
+            // 対象の検品ナンバーの商品の総数を取得
+//            val totalSuryo = kenpinNoData?.let { dao.getTotalSuryo(it) } ?: 0
+//            // 対象の検品ナンバーの商品の総済み数を取得
+//            val totalZumi = kenpinNoData?.let { dao.getTotalZumi(it) } ?: 0
+//            // 対象アイテムの総数を取得
+//            val itemsuryo = dao.getTotalSuryoByBarcode(scannedData)
+//            // 対象アイテムの総済み数を取得
+//            val itemzumi = dao.getTotalZumiByBarcode(scannedData)
+
+            // 検品中のリストが検品終了しているかどうかを判定
+            withContext(Dispatchers.Main) {
+//                if (totalSuryo <= totalZumi) {
+//                    showAlertDialog("検品終了", "その商品は検品終了してます")
+//                    return@withContext
+//                }
+//                if (itemsuryo <= itemzumi) {
+//                    showAlertDialog("検品終了", "その商品は検品終了してます")
+//                    return@withContext
+//                }
+            }
+
+            // ケース数の入力処理
+            val caseNumValue = caseNum.text.toString().toIntOrNull()
+            val baraNumValue = baraNum.text.toString().toIntOrNull()
+            val item = scannedData?.let { it1 -> dao.getItemCode(jan = it1, itf = "") }
+
+            // 入力値がnullじゃないかつデータベースのアイテムがnullじゃない場合
+//            if (caseNumValue != null && item != null) {
+//                val totalCaseNum = caseNumValue * item.in_q + item.zumi
+//                if (totalCaseNum > itemsuryo) {
+//                    withContext(Dispatchers.Main) {
+//                        showAlertDialog("エラー", "数量が超えています")
+//                    }
+//                    return@withContext
+//                } else {
+//                    dao.update(item.copy(zumi = totalCaseNum))
+                }
+            }
+
+            // バラ数の入力処理
+//            if (baraNumValue != null) {
+//                if (baraNumValue + (item?.zumi ?: 0) > itemsuryo) {
+//                    withContext(Dispatchers.Main) {
+//                        showAlertDialog("エラー", "数量が超えています")
+//                    }
+//                    return@withContext
+//                } else {
+//                    item?.let { dao.update(it.copy(zumi = baraNumValue + it.zumi)) }
+//                }
+//            }
+//        }
+//    }
+
+    private fun showAlertDialog(title: String, message: String) {
+            AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", null)
+                .show()
+    }
+    }
+

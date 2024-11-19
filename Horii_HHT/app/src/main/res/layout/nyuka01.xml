@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <!--    上部バー-->
+
+    <!-- Upper bar -->
     <View
         android:id="@+id/view"
         android:layout_width="0dp"
@@ -13,7 +14,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-    <!--上部バーの中に表示するテキスト"作業者入力"-->
+
+    <!-- Text inside upper bar -->
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
@@ -27,7 +29,8 @@
         app:layout_constraintBottom_toBottomOf="@+id/view"
         app:layout_constraintStart_toStartOf="@+id/view"
         app:layout_constraintTop_toTopOf="@+id/view" />
-    <!--下部バー-->
+
+    <!-- Lower bar -->
     <View
         android:id="@+id/view2"
         android:layout_width="0dp"
@@ -35,10 +38,9 @@
         android:background="#a1d8e2"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-
         app:layout_constraintStart_toStartOf="parent" />
-    <!--下部バーの中に表示するテキスト"F1 :確定"-->
-    <!--下部バーの中に表示するテキスト"F4 :戻る"-->
+
+    <!-- Text inside lower bar -->
     <TextView
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
@@ -51,64 +53,67 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/view2" />
 
-    <!--ただのテキスト-->
+    <!-- Grouped TextViews -->
+
     <TextView
         android:id="@+id/textView5"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="108dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
         android:fontFamily="@font/sawarabi_gothic"
         android:text="検品リストのQRコードを\n読み込んでください"
+        android:textAlignment="center"
         android:textColor="#4CAF50"
-        android:textSize="24sp"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/textView9"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/view" />
 
     <TextView
         android:id="@+id/textView9"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="64dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="8dp"
         android:fontFamily="@font/sawarabi_gothic"
         android:text="商品点数"
         android:textSize="34sp"
+        app:layout_constraintBottom_toTopOf="@+id/textView10"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView5" />
 
     <TextView
         android:id="@+id/textView10"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="8dp"
         android:fontFamily="@font/sawarabi_gothic"
-        android:text="商品総数"
+        android:text="ケース数"
         android:textSize="34sp"
-        app:layout_constraintStart_toStartOf="@+id/textView9"
+        app:layout_constraintBottom_toTopOf="@+id/bara"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView9" />
 
     <TextView
-        android:id="@+id/real_itemNum"
-        android:layout_width="wrap_content"
+        android:id="@+id/bara"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="@font/sawarabi_gothic"
+        android:text="バラ数"
         android:textSize="34sp"
-        app:layout_constraintBottom_toBottomOf="@+id/textView9"
+        app:layout_constraintBottom_toTopOf="@+id/view2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/textView9"
-        app:layout_constraintTop_toTopOf="@+id/textView9" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView10" />
 
-    <TextView
-        android:id="@+id/real_itemAll"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="34sp"
-        app:layout_constraintBottom_toBottomOf="@+id/textView10"
-        app:layout_constraintEnd_toEndOf="@+id/real_itemNum"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/real_itemNum"
-        app:layout_constraintTop_toTopOf="@+id/textView10" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
