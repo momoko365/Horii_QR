@@ -24,5 +24,24 @@ data class Item(
     val casezumi : Int,
 
     val barazumi : Int
-) {
-}
+)
+
+    data class SummarizedData(
+        val totalCaseQ: Int,
+        val totalBara: Int,
+        val totalCasezumi: Int,
+        val totalBarazumi: Int
+    )
+
+    // SummarizedItemデータクラスを定義
+    data class CSVData(
+        val kenpinNo: String,
+        val itemCD: String,
+        val itemName: String,
+        val totalCaseQ: Int,
+        val totalBara: Int,
+        val totalCasezumi: Int,
+        val totalBarazumi: Int,
+        val JAN: String,
+        val ITF: String
+    )

@@ -34,23 +34,12 @@ fun getTotalCase(): Int
     @Query("SELECT SUM(casezumi) FROM Item")
     fun getCasezumi(): Int
 
-
-//    // suryoがzumiのアイテムの数を取得する
-//    @Query("SELECT COUNT(*) FROM Item WHERE case_q = 'zumi'")
-//    fun getCountOfZumiItems(): Int
-
-//    // 全行のzumi数をカウントする
-//    @Query("SELECT SUM(zumi) FROM Item")
-//    fun getTotalZumiCount(): Int
 //JANかITFが一致するアイテムを取得する（複数）
     @Query("SELECT * FROM ITEM WHERE JAN = :jan OR ITF = :itf")
     fun getItemByCode(jan: String, itf: String): List<Item>
 //JANかITFが一致するアイテムを取得する（一つだけ）
     @Query("SELECT * FROM ITEM WHERE jan = :jan OR itf = :itf LIMIT 1")
    fun getItemCode(jan: String, itf: String): Item?
-
-//   @Query("SELECT * FROM Item WHERE suryo - zumi > 0")
-//    fun getUnfinishedItems(): List<Item>
 
     @Query("SELECT * FROM Item WHERE kenpinNo = :kenpinNo")
     fun getItemsByKenpinNo(kenpinNo: String): List<Item>
@@ -65,39 +54,41 @@ fun getTotalCase(): Int
     @Query("DELETE FROM Item")
     fun deleteAllItems()
 
-    //終了してるアイテム点数をカウント
-//    @Query("""
-//    SELECT COUNT(*)
-//    FROM (
-//        SELECT itemCD
-//        FROM Item
-//        GROUP BY itemCD
-//        HAVING SUM(suryo) = SUM(zumi)
-//    ) AS matched_items
-//""")
-//    fun getCountOfMatchedItems(): Int
-
     //バーコードを引数にして検品ナンバーを取得
     @Query("SELECT kenpinNo FROM Item WHERE JAN = :barcode OR ITF = :barcode")
     fun getKenpinNoByBarcode(barcode: String): String?
-//
-////同一検品ナンバーのアイテムの総数を取得
-//    @Query("SELECT SUM(suryo) FROM Item WHERE kenpinNo = :kenpinNo")
-//    fun getTotalSuryo(kenpinNo: String): Int
-////同一検品ナンバーのアイテムの総数を取得
-//    @Query("SELECT SUM(zumi) FROM Item WHERE kenpinNo = :kenpinNo")
-//    fun getTotalZumi(kenpinNo: String): Int
-//    // itemCDが一致しているもののsuryo合計を取得
-//    @Query("SELECT SUM(suryo) FROM Item WHERE itemCD = (SELECT itemCD FROM Item WHERE JAN = :barcode OR ITF = :barcode LIMIT 1)")
-//    fun getTotalSuryoByBarcode(barcode: String): Int
-//
-//    // itemCDが一致しているもののzumi合計を取得
-//    @Query("SELECT SUM(zumi) FROM Item WHERE itemCD = (SELECT itemCD FROM Item WHERE JAN = :barcode OR ITF = :barcode LIMIT 1)")
-//    fun getTotalZumiByBarcode(barcode: String): Int
 
-//    //商品の入数を取り出す
-//    @Query("SELECT in_q FROM Item WHERE JAN = :barcode OR ITF = :barcode LIMIT 1")
-//    fun getInqByBarcode(barcode: String): Int?
 
+    //検品ナンバーと商品コードが一致するアイテムを取得
+@Query("SELECT * FROM Item WHERE kenpinNo = :kenpinNo AND itemCD = :itemCD LIMIT 1")
+fun getItemByKenpinNoAndItemCD(kenpinNo: String, itemCD: String): Item?
+
+    //検品ナンバーと商品コードが一致するアイテムをまとめて取得
+    @Query("""
+        SELECT 
+            SUM(case_q) as totalCaseQ, 
+            SUM(bara) as totalBara, 
+            SUM(casezumi) as totalCasezumi, 
+            SUM(barazumi) as totalBarazumi 
+        FROM Item 
+        WHERE ITF = :scannedData OR JAN = :scannedData
+    """)
+ fun getSummarizedData(scannedData: String): SummarizedData
+
+    @Query("""
+        SELECT 
+            kenpinNo, 
+            itemCD, 
+            itemName, 
+            JAN,
+            ITF,
+            SUM(case_q) as totalCaseQ, 
+            SUM(bara) as totalBara, 
+            SUM(casezumi) as totalCasezumi, 
+            SUM(barazumi) as totalBarazumi 
+        FROM Item
+        GROUP BY kenpinNo, itemCD
+    """)
+    fun getCSVdata(): List<CSVData>
 
 }

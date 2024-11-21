@@ -83,7 +83,8 @@ class Nyuka03_Barread: AppCompatActivity() {
                 lockScreen()
                 tyudanbtn.text = "作業再開"
                 tyudanbtn.setTextColor(Color.BLUE)
-                disableEditText()
+//                disableEditText()
+                barcodedata.isEnabled = false
             }
             isLocked = !isLocked
         }
@@ -157,6 +158,10 @@ class Nyuka03_Barread: AppCompatActivity() {
     private val scanDataReceiver = object : BroadcastReceiver() {
         //スキャン受信
         override fun onReceive(context: Context, intent: Intent) {
+            // isLocked が true の場合、処理を中断
+            if (isLocked) {
+                return
+            }
             //受信したインテントがスキャナからの入力用のアクションであるかどうか確認
             if (intent.action == GeneralString.Intent_PASS_TO_APP) {
                 //スキャンされたデータを取得
@@ -167,6 +172,7 @@ class Nyuka03_Barread: AppCompatActivity() {
                     isScanner = true
                     //スキャンデータを表示
                     barcodedata.setText(data)
+                    barcodedata.setSelection(barcodedata.text.length)
                     //有効なデータだった場合検索実行
                     searchBarcodeAndNavigate(data!!)
                 } else {
@@ -214,20 +220,33 @@ class Nyuka03_Barread: AppCompatActivity() {
                 true
             }
             KeyEvent.KEYCODE_F1 -> {
-                //barcodedata.text=キーボードからの入力、空だったらスキャンデータを使う
+                // barcodedata.text = キーボードからの入力、空だったらスキャンデータを使う
                 val barcodeInput = barcodedata.text.toString().ifEmpty { data }
-                //バーコードが入力されているかチェック
+                lifecycleScope.launch(Dispatchers.IO) {
+                    // バーコードを引数にしてDB検索
+                    val items = barcodeInput?.let { dao.getItemByCode(jan = it, itf = "") } ?: emptyList()
 
-                if (barcodeInput != null) {
-                    if (barcodeInput.isNotEmpty()) {
-                        barcodeInput?.let { searchBarcodeAndNavigate(it) }
-                        val intent = Intent(this, Nyuka04_Num::class.java)
-                        intent.putExtra("barcode", barcodeInput)
-                        startActivity(intent)
-                        finish()
-                    } else {
-                        showAlertDialog("エラー", "有効なJANまたはITFコードを入力してください")
-
+                    withContext(Dispatchers.Main) {
+                        // 検索結果がnullまたは空の場合
+                        if (items.isEmpty()) {
+                            showAlertDialog("エラー", "検品商品が見つかりません")
+                        } else {
+                            // nullチェック
+                            if (barcodeInput != null) {
+                                // テキストが空じゃないかチェック
+                                if (barcodeInput.isNotEmpty()) {
+                                    barcodeInput.let { searchBarcodeAndNavigate(it) }
+                                    val intent = Intent(this@Nyuka03_Barread, Nyuka04_Num::class.java)
+                                    intent.putExtra("barcode", barcodeInput)
+                                    startActivity(intent)
+                                    finish()
+                                } else {
+                                    showAlertDialog("エラー", "有効なJANまたはITFコードを入力してください")
+                                }
+                            } else {
+                                showAlertDialog("エラー", "バーコードを入力してください")
+                            }
+                        }
                     }
                 }
                 true
@@ -253,7 +272,8 @@ class Nyuka03_Barread: AppCompatActivity() {
         findViewById<View>(R.id.itemNum).isEnabled = false
         findViewById<View>(R.id.real_itemNum).isEnabled = false
         findViewById<View>(R.id.kenpinNo).isEnabled = false
-
+        findViewById<View>(R.id.baraall).isEnabled = false
+        findViewById<View>(R.id.barazumi).isEnabled = false
         findViewById<EditText>(R.id.barcode).isEnabled = false
         // ボタンは無効化しない
         tyudanbtn.isEnabled = true
@@ -267,7 +287,8 @@ class Nyuka03_Barread: AppCompatActivity() {
         findViewById<View>(R.id.itemNum).isEnabled = true
         findViewById<View>(R.id.real_itemNum).isEnabled = true
         findViewById<View>(R.id.kenpinNo).isEnabled = true
-
+        findViewById<View>(R.id.baraall).isEnabled = true
+        findViewById<View>(R.id.barazumi).isEnabled = true
         findViewById<EditText>(R.id.barcode).isEnabled = true
         // ボタンは引き続き有効
         tyudanbtn.isEnabled = true

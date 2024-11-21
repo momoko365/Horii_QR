@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -59,9 +60,12 @@ class Nyuka01_QRread : AppCompatActivity() {
     // スキャン結果を受け取るBroadcastReceiver
     private val scanDataReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+
+
             when (intent.action) {
                 GeneralString.Intent_PASS_TO_APP -> {
                     var scannedData = intent.getStringExtra(GeneralString.BcReaderData)
+                    Log.d("ScanData", "Received raw data: $scannedData")
 
                     if (scannedData != null) {
                         var cleanedData = scannedData.replace("\n", "")
@@ -93,6 +97,8 @@ class Nyuka01_QRread : AppCompatActivity() {
                         lifecycleScope.launch(Dispatchers.IO) {
                             try {
                                 dao.insert(itemsToInsert)
+                                val allItem = dao.getItemAll()
+                                Log.d("Database","Current items in database: $allItem")
 
                                 // すべての処理が完了してから次の画面に遷移
                                 runOnUiThread {
@@ -154,5 +160,7 @@ class Nyuka01_QRread : AppCompatActivity() {
         unregisterReceiver(scanDataReceiver)
         // ReaderManagerの解放
         readerManager?.Release()
+        Log.d("ScanData", "Received raw data: ${intent.getStringExtra(GeneralString.BcReaderData)}")
+
     }
 }

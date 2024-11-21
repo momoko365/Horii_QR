@@ -27,9 +27,9 @@
         app:layout_constraintBottom_toBottomOf="@+id/view"
         app:layout_constraintStart_toStartOf="@+id/view"
         app:layout_constraintTop_toTopOf="@+id/view" />
-<!--    上部バー-->
+    <!--    上部バー-->
 
-<!--    検品No:-->
+    <!--    検品No:-->
     <TextView
         android:id="@+id/textView11"
         android:layout_width="wrap_content"
@@ -53,9 +53,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView11"
         app:layout_constraintTop_toTopOf="@+id/textView11" />
-<!--    検品NO↑-->
+    <!--    検品NO↑-->
 
-<!--    商品点数↓-->
+    <!--    商品点数↓-->
     <TextView
         android:id="@+id/textView9"
         android:layout_width="wrap_content"
@@ -100,9 +100,9 @@
         app:layout_constraintBottom_toBottomOf="@+id/textView12"
         app:layout_constraintStart_toEndOf="@+id/textView12"
         app:layout_constraintTop_toTopOf="@+id/textView12" />
-<!--商品点数ここまで↑-->
+    <!--商品点数ここまで↑-->
 
-<!--    ケース数↓-->
+    <!--    ケース数↓-->
     <TextView
         android:id="@+id/textView10"
         android:layout_width="wrap_content"
@@ -148,9 +148,9 @@
         app:layout_constraintBottom_toBottomOf="@+id/real_itemAll"
         app:layout_constraintStart_toEndOf="@+id/textView12"
         app:layout_constraintTop_toTopOf="@+id/real_itemAll" />
-<!--    ケース数↑-->
+    <!--    ケース数↑-->
 
-<!--バラ数↓-->
+    <!--バラ数↓-->
     <TextView
         android:id="@+id/textView19"
         android:layout_width="wrap_content"
@@ -166,8 +166,8 @@
         android:id="@+id/barazumi"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
         android:fontFamily="@font/sawarabi_gothic"
+        android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="@+id/textView19"
         app:layout_constraintEnd_toEndOf="@+id/real_itemAll"
         app:layout_constraintStart_toStartOf="@+id/real_itemAll"
@@ -189,15 +189,15 @@
         android:id="@+id/baraall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
         android:fontFamily="@font/sawarabi_gothic"
+        android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="@+id/textView23"
         app:layout_constraintEnd_toEndOf="@+id/itemAll"
         app:layout_constraintStart_toStartOf="@+id/itemAll"
         app:layout_constraintTop_toTopOf="@+id/textView23" />
-<!--    バラ数↑-->
+    <!--    バラ数↑-->
 
-<!--    商品バーコードを入力してください-->
+    <!--    商品バーコードを入力してください-->
 
     <!--    バーコード入力欄-->
 
@@ -268,29 +268,25 @@
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="24dp"
         android:fontFamily="@font/sawarabi_gothic"
         android:text="F1:確定"
         android:textSize="34sp"
-        app:layout_constraintBottom_toBottomOf="@+id/view2"
-        app:layout_constraintEnd_toStartOf="@+id/textView555"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/view2"
-        app:layout_constraintVertical_bias="0.125" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/view2"
+        app:layout_constraintTop_toTopOf="@+id/view2" />
 
     <TextView
         android:id="@+id/textView555"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
         android:fontFamily="@font/sawarabi_gothic"
         android:text="F7:取消"
         android:textSize="34sp"
-        app:layout_constraintBottom_toBottomOf="@+id/view2"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.479"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/view2"
-        app:layout_constraintVertical_bias="0.0" />
-<!--下部バー↑-->
+        app:layout_constraintTop_toTopOf="@+id/view2" />
+    <!--下部バー↑-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

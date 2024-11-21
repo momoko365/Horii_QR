@@ -92,7 +92,11 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
     private val scanDataReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == GeneralString.Intent_PASS_TO_APP) {
-                val receivedData = intent.getStringExtra(GeneralString.BcReaderData)
+                val receivedData = intent.getStringExtra(GeneralString.BcReaderData) ?: return
+
+
+                Log.d("ScanData", "Received raw data: $receivedData")
+
                 if (receivedData != null && receivedData != scannedData) {
                     scannedData = receivedData
 
@@ -105,8 +109,11 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
 
                     // 7の倍数のデータだけ処理
                     val validDataParts = (dataParts.size / 7) * 7
-                    var dataInserted = false // フラグを追加
+                    var dataInserted = true // フラグを追加
+                    Log.d("ScanData", "Received raw data: $scannedData")
 
+
+                    // データ挿入が成功した場合にアクティビティを再起動
                     if (validDataParts >= 7) {
                         for (i in 0 until validDataParts step 7) {
                             val item = Item(
@@ -121,56 +128,37 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                                 casezumi = 0,
                                 barazumi = 0
                             )
-                           itemsToInsert.add(item)
+                            itemsToInsert.add(item)
+                        }
 
-                            // 非同期処理
-                            lifecycleScope.launch(Dispatchers.IO) {
-                                try {
-                                    // データベースにインサート
-                                    dao.insert(itemsToInsert)
-                                    dataInserted = true // データが挿入されたことを記録
+                        // 非同期処理
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            try {
+                                // データベースにインサート
+                                dao.insert(itemsToInsert)
 
-                                    // データ取得もバックグラウンドで行う
-                                    val distinctItemCount = dao.getDistinctItemCount()
-                                    val totalCase = dao.getTotalCase()
-                                    val totalBara = dao.getTotalBara()
-                                    val kenpinNoValue = dao.getKenpinNo()
+                                val allItem = dao.getItemAll()
+                                Log.d("Database", "Current items in database: $allItem")
 
-                                    // UIスレッドで更新
-                                    withContext(Dispatchers.Main) {
-                                        val itemNum = findViewById<TextView>(R.id.real_itemNum)
-                                        val caseAll = findViewById<TextView>(R.id.real_itemAll)
-                                        val baraAll = findViewById<TextView>(R.id.realbara)
-                                        val kenpinNo = findViewById<TextView>(R.id.kenpinNo)
-                                        itemNum.text = distinctItemCount.toString()
-                                        caseAll.text = totalCase.toString()
-                                        baraAll.text = totalBara.toString()
-                                        kenpinNo.text = kenpinNoValue ?: "N/A"
-                                    }
+                                // UIスレッドでアクティビティを再起動
+                                withContext(Dispatchers.Main) {
+                                    val intent = Intent(this@Nyuka02_KenpinStart, Nyuka02_KenpinStart::class.java)
+                                    startActivity(intent)
+                                    finish() // 現在のアクティビティを終了
+                                }
 
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                    Log.e("DatabaseError", "Error during insertion", e)
-                                    withContext(Dispatchers.Main) {
-                                        AlertDialog.Builder(this@Nyuka02_KenpinStart)
-                                            .setTitle("エラー")
-                                            .setMessage("不正なQRコードです。")
-                                            .setPositiveButton("OK", null)
-                                            .show()
-                                    }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                Log.e("DatabaseError", "Error during insertion", e)
+                                withContext(Dispatchers.Main) {
+                                    AlertDialog.Builder(this@Nyuka02_KenpinStart)
+                                        .setTitle("エラー")
+                                        .setMessage("不正なQRコードです。")
+                                        .setPositiveButton("OK", null)
+                                        .show()
                                 }
                             }
                         }
-
-                        // ループ終了後に画面遷移を行う
-                        if (dataInserted) {
-                            lifecycleScope.launch(Dispatchers.Main) {
-                                val nextIntent = Intent(this@Nyuka02_KenpinStart, Nyuka02_KenpinStart::class.java)
-                                startActivity(nextIntent)
-                                finish()
-                            }
-                        }
-
                     } else {
                         Toast.makeText(
                             this@Nyuka02_KenpinStart,
@@ -178,12 +166,11 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                             Toast.LENGTH_SHORT
                         ).show()
                     }
+
                 }
             }
         }
     }
-
-
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
@@ -206,14 +193,15 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                         }
                     }
                     withContext(Dispatchers.Main) {
+                        withContext(Dispatchers.IO) {
+                          val allItem = dao.getItemAll()
+                            Log.d("Database","Current items in database: $allItem")
+                        }
                         val intent = Intent(this@Nyuka02_KenpinStart, Nyuka01_QRread::class.java)
                         startActivity(intent)
                         finish()
-
                     }
                 }
-
-
                 true
             }
             else -> super.onKeyDown(keyCode, event)
