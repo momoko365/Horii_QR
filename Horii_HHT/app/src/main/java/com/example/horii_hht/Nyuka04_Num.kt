@@ -42,6 +42,7 @@ class Nyuka04_Num : AppCompatActivity() {
     private lateinit var scannedData: String
     private var caseNumValue: Int? = null
     private var baraNumValue: Int? = null
+    private lateinit var screenReceiver: ScreenStateReceiver
 
     // 外部ストレージへの書き込みパーミッションのリクエスト要求
     companion object {
@@ -51,6 +52,14 @@ class Nyuka04_Num : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka04)
+
+        // ScreenStateReceiverの初期化と登録
+        screenReceiver = ScreenStateReceiver()
+        val screenfilter = IntentFilter().apply {
+            addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_SCREEN_OFF)
+        }
+        registerReceiver(screenReceiver, screenfilter)
 
         // Intentで全画面からデータを取得
         scannedData = intent.getStringExtra("barcode").toString()
@@ -112,7 +121,7 @@ class Nyuka04_Num : AppCompatActivity() {
             // データベースからデータを取得
             val kenpinNoValue = dao.getKenpinNo() // 検品番号
             val distinctItemCount = dao.getDistinctItemCount() // 商品点数
-//            val getCountOfZumiItems = dao.getCountOfMatchedItems() // 検品終了している商品の数
+            val itemCheck = dao.getCSVdata() //商品点数済み数
             val caseTotal = dao.getTotalCase() // ケース数
             val casezumiTotal = dao.getCasezumi() // ケース済み数
             val baraTotal = dao.getTotalBara() // バラ数
@@ -122,7 +131,13 @@ class Nyuka04_Num : AppCompatActivity() {
             launch(Dispatchers.Main) {
                 kenpinNo.text = kenpinNoValue // 検品番号を表示
                 itemNum.text = distinctItemCount.toString() // 商品点数を表示
-//                real_itemNum.text = getCountOfZumiItems.toString() // 検品終了している商品の数を表示
+                var count = 0
+                for (i in itemCheck) {
+                    if (i.totalBara == barazumiTotal && i.totalCasezumi == casezumiTotal) {
+                        count++
+                    }
+                }
+                real_itemNum.text = count.toString()// 商品点数済み数を表示
                 caseAll.text = caseTotal.toString() // ケース数を表示
                 casezumi.text = casezumiTotal.toString() // ケース済み数を表示
                 baraAll.text = baraTotal.toString() // バラ数を表示
@@ -177,7 +192,6 @@ class Nyuka04_Num : AppCompatActivity() {
         }
     }
 
-    // CSVファイルにデータを書き込む関数
     private fun writeDataToCSV() {
         // ケース数の入力処理
         val caseNumValue = caseNum.text.toString().toIntOrNull()
@@ -200,47 +214,55 @@ class Nyuka04_Num : AppCompatActivity() {
             .setMessage("CSVを出力します。")
             .setPositiveButton("OK") { dialog, which ->
                 // ユーザーがOKを選択した場合、CSV書き込み処理を実行
-        lifecycleScope.launch {
-            val items = withContext(Dispatchers.IO) {
-                // データベースから全てのアイテムを取得
-                dao.getCSVdata()
-
-            }
-            // ファイル書き込み先のディレクトリを作成
-            val customDir = File("/storage/self/primary/horiitest")
-            if (!customDir.exists()) {
-                // ディレクトリが存在しない場合作成
-                val dirCreated = customDir.mkdirs()
-                if (!dirCreated) {
-                    runOnUiThread {
-                        Toast.makeText(this@Nyuka04_Num, "ディレクトリの作成に失敗しました: ${customDir.absolutePath}", Toast.LENGTH_LONG).show()
+                lifecycleScope.launch {
+                    val items = withContext(Dispatchers.IO) {
+                        // データベースから全てのアイテムを取得
+                        dao.getCSVdata()
                     }
-                    return@launch
-                }
-            }
-            val dateFormat = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.getDefault())
-            val currentTime = dateFormat.format(Date())
-            // CSVファイルを作成
-            val csvFile = File(customDir, "$currentTime.csv")
-            try {
-                // CSVファイルにデータを書き込む
-                FileWriter(csvFile).use { writer ->  //useはwriterオブジェクト使用後クローズ処理を自動で行う
-                    CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("商品コード", "商品名", "ケース数", "ケース済数", "バラ数", "バラ済数", "JAN", "ITF")).use { csvPrinter ->
-                        for (item in items) {
-                            csvPrinter.printRecord(item.itemCD, item.itemName, item.totalCaseQ, item.totalCasezumi, item.totalBara, item.totalBarazumi, item.JAN, item.ITF)
+                    // ファイル書き込み先のディレクトリを作成
+                    val customDir = File("/storage/self/primary/horiitest")
+                    if (!customDir.exists()) {
+                        // ディレクトリが存在しない場合作成
+                        val dirCreated = customDir.mkdirs()
+                        if (!dirCreated) {
+                            runOnUiThread {
+                                Toast.makeText(this@Nyuka04_Num, "ディレクトリの作成に失敗しました: ${customDir.absolutePath}", Toast.LENGTH_LONG).show()
+                            }
+                            return@launch
+                        }
+                    }
+                    val kenpinNo = withContext(Dispatchers.IO) {
+                        // 検品番号を取得
+                        dao.getKenpinNo()
+                    }
+                    // CSVファイルを作成
+                    val csvFile = File(customDir, "$kenpinNo.csv")
+                    try {
+                        // CSVファイルにデータを書き込む
+                        FileWriter(csvFile).use { writer ->  //useはwriterオブジェクト使用後クローズ処理を自動で行う
+                            CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("商品コード", "商品名", "ケース数", "ケース済数", "バラ数", "バラ済数", "JAN", "ITF")).use { csvPrinter ->
+                                for (item in items) {
+                                    csvPrinter.printRecord(item.itemCD, item.itemName, item.totalCaseQ, item.totalCasezumi, item.totalBara, item.totalBarazumi, item.JAN, item.ITF)
+                                }
+                            }
+                        }
+                        runOnUiThread {
+                            Toast.makeText(this@Nyuka04_Num, "CSVファイル書き出しに成功しました", Toast.LENGTH_LONG).show()
+                        }
+                        withContext(Dispatchers.IO) {
+                            // データベースのアイテムを全削除
+                            dao.deleteAllItems()
+                        }
+                        val intent = Intent(this@Nyuka04_Num, Main_Menu::class.java)
+                        startActivity(intent)
+                        finish()
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                        runOnUiThread {
+                            Toast.makeText(this@Nyuka04_Num, "CSVファイルの書き出しに失敗しました: ${e.message}", Toast.LENGTH_LONG).show()
                         }
                     }
                 }
-                runOnUiThread {
-                    Toast.makeText(this@Nyuka04_Num, "CSVファイルに書き出しました: ${csvFile.absolutePath}", Toast.LENGTH_LONG).show()
-                }
-            } catch (e: IOException) {
-                e.printStackTrace()
-                runOnUiThread {
-                    Toast.makeText(this@Nyuka04_Num, "CSVファイルの書き出しに失敗しました: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
             }
             .setNegativeButton("CANCEL", null)
             .show()
@@ -250,9 +272,12 @@ class Nyuka04_Num : AppCompatActivity() {
         return when (keyCode) {
             KeyEvent.KEYCODE_F1 -> {
                 lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        nextBtnClick()
-                    }
+                    // 非同期処理が完了するまで待つ
+                    nextBtnClick()
+                    // 非同期処理が完了した後に画面遷移
+                    val intent = Intent(this@Nyuka04_Num, Nyuka03_Barread::class.java)
+                    startActivity(intent)
+                    finish()
                 }
                 true
             }
@@ -268,6 +293,28 @@ class Nyuka04_Num : AppCompatActivity() {
                 val intent = Intent(this, Nyuka02_KenpinStart::class.java)
                 startActivity(intent)
                 finish()
+                true
+            }
+            KeyEvent.KEYCODE_F8 -> {
+                //外部ストレージへの書き込みパーミッションがすでに許可されているかどうかをチェックして必要に応じてリクエストする関数
+                requestWritePermissionAndWriteCSV()
+                //メインメニューに遷移
+//            val intent = Intent(this, Main_Menu::class.java)
+//            startActivity(intent)
+
+            true
+            }
+            KeyEvent.KEYCODE_F6 -> {
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        // zumi数をすべて0に戻し、timeをnullにする
+                        dao.resetZumiAndTime()
+                    }
+                    // Nyuka02_KenpinStartへ遷移
+                    val intent = Intent(this@Nyuka04_Num, Nyuka02_KenpinStart::class.java)
+                    startActivity(intent)
+                    finish()
+                }
                 true
             }
             else -> super.onKeyDown(keyCode, event)
@@ -354,10 +401,10 @@ class Nyuka04_Num : AppCompatActivity() {
                     // バラ数の入力処理
                     baraNumValue = baraNum.text.toString().toIntOrNull()
                     // 入力値がnullの場合にダイアログを表示
-//                    if (caseNumValue == null && baraNumValue == null) {
-//                        showAlertDialog("エラー", "数字を入力してください")
-//                        return@withContext
-//                    }
+                    if (caseNumValue == null && baraNumValue == null) {
+                        showAlertDialog("エラー", "数字を入力してください")
+                        return@withContext
+                    }
                     // 入力値がnullじゃないかつデータベースのアイテムがnullじゃない場合
                     if (caseNumValue != null) {
                         // ケース数がケース数合計を超えている場合
@@ -401,6 +448,37 @@ class Nyuka04_Num : AppCompatActivity() {
                 .setMessage(message)
                 .setPositiveButton("OK", null)
                 .show()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // BroadcastReceiverの解除
+        unregisterReceiver(screenReceiver)
+    }    // ダイアログを表示するメソッド
+    fun showWorkingDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("作業中")
+            .setMessage("作業中です")
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    //指定した時間分スクリーンオフにしてたら起動するメソッド
+    fun resetDatabaseAndShowDialog() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            dao.deleteAllItems()
+            withContext(Dispatchers.Main) {
+                AlertDialog.Builder(this@Nyuka04_Num)
+                    .setTitle("注意")
+                    .setMessage("全ての作業を取り消しました。メインメニューに戻ります。")
+                    .setPositiveButton("OK") { _, _ ->
+                        val intent = Intent(this@Nyuka04_Num, Main_Menu::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                    .show()
+            }
+        }
     }
     }
 

@@ -91,4 +91,10 @@ fun getItemByKenpinNoAndItemCD(kenpinNo: String, itemCD: String): Item?
     """)
     fun getCSVdata(): List<CSVData>
 
-}
+//既存データのチェック
+        @Query("SELECT COUNT(*) FROM Item WHERE kenpinNo = :kenpinNo AND kenpinpage = :kenpinpage")
+         fun duplicationQR(kenpinNo: String, kenpinpage: String): Int
+
+    @Query("UPDATE item SET barazumi = 0,casezumi = 0 ,kenpinTime = NULL")
+   fun resetZumiAndTime()
+    }

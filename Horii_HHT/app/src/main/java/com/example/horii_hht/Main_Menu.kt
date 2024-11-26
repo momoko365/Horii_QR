@@ -43,6 +43,13 @@ class Main_Menu : AppCompatActivity() {
                 finish()
                 true
             }
+            KeyEvent.KEYCODE_F5 -> {
+                // F2キーが押されたときの処理
+                val intent = Intent(this,SettingsActivity::class.java)
+                startActivity(intent)
+                finish()
+                true
+            }
             KeyEvent.KEYCODE_ENTER -> {
                 // エンターキーが押されたときの処理を無効にする
                 false

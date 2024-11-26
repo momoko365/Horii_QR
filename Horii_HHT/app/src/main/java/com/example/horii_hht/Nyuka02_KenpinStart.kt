@@ -29,10 +29,21 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
     private lateinit var filter: IntentFilter
     private var readerManager: ReaderManager? = null
     private var scannedData: String? = null
+    private lateinit var screenReceiver: ScreenStateReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka02)
+
+
+        // ScreenStateReceiverの初期化と登録
+        screenReceiver = ScreenStateReceiver()
+        val screenfilter = IntentFilter().apply {
+            addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_SCREEN_OFF)
+        }
+        registerReceiver(screenReceiver, screenfilter)
+
 
         // ReaderManagerの初期化
         readerManager = ReaderManager.InitInstance(this)
@@ -88,12 +99,10 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
         }
     }
 
-    // スキャン結果を受け取るBroadcastReceiver
     private val scanDataReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == GeneralString.Intent_PASS_TO_APP) {
                 val receivedData = intent.getStringExtra(GeneralString.BcReaderData) ?: return
-
 
                 Log.d("ScanData", "Received raw data: $receivedData")
 
@@ -108,31 +117,45 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                     val itemsToInsert = mutableListOf<Item>()
 
                     // 7の倍数のデータだけ処理
-                    val validDataParts = (dataParts.size / 7) * 7
-                    var dataInserted = true // フラグを追加
+                    val validDataParts = (dataParts.size / 8) * 8
                     Log.d("ScanData", "Received raw data: $scannedData")
 
-
-                    // データ挿入が成功した場合にアクティビティを再起動
-                    if (validDataParts >= 7) {
-                        for (i in 0 until validDataParts step 7) {
-                            val item = Item(
-                                id = 0,
-                                kenpinNo = dataParts[i],
-                                itemCD = dataParts[i + 1],
-                                itemName = dataParts[i + 2],
-                                case_q = dataParts[i + 3].toInt(),
-                                bara = dataParts[i + 4].toInt(),
-                                JAN = dataParts[i + 5],
-                                ITF = dataParts[i + 6],
-                                casezumi = 0,
-                                barazumi = 0
-                            )
-                            itemsToInsert.add(item)
-                        }
-
-                        // 非同期処理
+                    if (validDataParts >= 8) {
                         lifecycleScope.launch(Dispatchers.IO) {
+                            for (i in 0 until validDataParts step 8) {
+                                val kenpinNo = dataParts[i]
+                                val kenpinpage = dataParts[i + 1]
+
+                                // 既存のデータをチェック
+                                val count = dao.duplicationQR(kenpinNo, kenpinpage)
+                                if (count > 0) {
+                                    withContext(Dispatchers.Main) {
+                                        AlertDialog.Builder(this@Nyuka02_KenpinStart)
+                                            .setTitle("エラー")
+                                            .setMessage("すでに読み込まれているQRコードです")
+                                            .setPositiveButton("OK", null)
+                                            .show()
+                                    }
+                                    return@launch
+                                }
+
+                                val item = Item(
+                                    id = 0,
+                                    kenpinNo = kenpinNo,
+                                    kenpinpage = kenpinpage,
+                                    itemCD = dataParts[i + 2],
+                                    itemName = dataParts[i + 3],
+                                    case_q = dataParts[i + 4].toInt(),
+                                    bara = dataParts[i + 5].toInt(),
+                                    JAN = dataParts[i + 6],
+                                    ITF = dataParts[i + 7],
+                                    casezumi = 0,
+                                    barazumi = 0,
+                                    kenpinTime = null
+                                )
+                                itemsToInsert.add(item)
+                            }
+
                             try {
                                 // データベースにインサート
                                 dao.insert(itemsToInsert)
@@ -166,12 +189,10 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                             Toast.LENGTH_SHORT
                         ).show()
                     }
-
                 }
             }
         }
     }
-
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
             KeyEvent.KEYCODE_F7 -> {
@@ -214,5 +235,33 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
         unregisterReceiver(scanDataReceiver)
         // ReaderManagerの解放
         readerManager?.Release()
+        unregisterReceiver(screenReceiver)
+    }
+
+    // ダイアログを表示するメソッド
+    fun showWorkingDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("作業中")
+            .setMessage("作業中です")
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    //指定した時間分スクリーンオフにしてたら起動するメソッド
+    fun resetDatabaseAndShowDialog() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            dao.deleteAllItems()
+            withContext(Dispatchers.Main) {
+                AlertDialog.Builder(this@Nyuka02_KenpinStart)
+                    .setTitle("注意")
+                    .setMessage("全ての作業を取り消しました。メインメニューに戻ります。")
+                    .setPositiveButton("OK") { _, _ ->
+                        val intent = Intent(this@Nyuka02_KenpinStart, Main_Menu::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                    .show()
+            }
+        }
     }
 }

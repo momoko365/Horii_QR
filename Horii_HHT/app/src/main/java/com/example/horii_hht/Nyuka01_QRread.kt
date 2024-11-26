@@ -18,6 +18,7 @@ import com.example.horii_hht.DB.Item
 import com.example.horii_hht.DB.ItemDAO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class Nyuka01_QRread : AppCompatActivity() {
 //インテントフィルターを初期化
@@ -28,10 +29,20 @@ class Nyuka01_QRread : AppCompatActivity() {
     private lateinit var db: AppDatabase
     //DAOを初期化
     private lateinit var dao: ItemDAO
+    private lateinit var screenReceiver: ScreenStateReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka01)
+
+
+        // ScreenStateReceiverの初期化と登録
+        screenReceiver = ScreenStateReceiver()
+        val screenfilter = IntentFilter().apply {
+            addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_SCREEN_OFF)
+        }
+        registerReceiver(screenReceiver, screenfilter)
 
         // ReaderManagerの初期化
         readerManager = ReaderManager.InitInstance(this)
@@ -70,23 +81,25 @@ class Nyuka01_QRread : AppCompatActivity() {
                     if (scannedData != null) {
                         var cleanedData = scannedData.replace("\n", "")
                         var dataParts = cleanedData.split(",")
-                        var validDataParts = (dataParts.size / 7) * 7
+                        var validDataParts = (dataParts.size / 8) * 8
 
                         // データ挿入用のリスト
                         val itemsToInsert = mutableListOf<Item>()
 
-                        for (i in 0 until validDataParts step 7) {
+                        for (i in 0 until validDataParts step 8) {
                             val item = Item(
                                 id = 0,
                                 kenpinNo = dataParts[i],
-                                itemCD = dataParts[i + 1],
-                                itemName = dataParts[i + 2],
-                                case_q = dataParts[i + 3].toInt(),
-                                bara = dataParts[i + 4].toInt(),
-                                JAN = dataParts[i + 5],
-                                ITF = dataParts[i + 6],
+                                kenpinpage = dataParts[i + 1],
+                                itemCD = dataParts[i + 2],
+                                itemName = dataParts[i + 3],
+                                case_q = dataParts[i + 4].toInt(),
+                                bara = dataParts[i + 5].toInt(),
+                                JAN = dataParts[i + 6],
+                                ITF = dataParts[i + 7],
                                 casezumi = 0,
-                                barazumi = 0
+                                barazumi = 0,
+                                kenpinTime = null
                             )
 
                             // 挿入するアイテムをリストに追加
@@ -161,6 +174,34 @@ class Nyuka01_QRread : AppCompatActivity() {
         // ReaderManagerの解放
         readerManager?.Release()
         Log.d("ScanData", "Received raw data: ${intent.getStringExtra(GeneralString.BcReaderData)}")
+        unregisterReceiver(screenReceiver)
 
+    }
+
+    // ダイアログを表示するメソッド
+    fun showWorkingDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("作業中")
+            .setMessage("作業中です")
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    //指定した時間分スクリーンオフにしてたら起動するメソッド
+    fun resetDatabaseAndShowDialog() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            dao.deleteAllItems()
+            withContext(Dispatchers.Main) {
+                AlertDialog.Builder(this@Nyuka01_QRread)
+                    .setTitle("注意")
+                    .setMessage("全ての作業を取り消しました。メインメニューに戻ります。")
+                    .setPositiveButton("OK") { _, _ ->
+                        val intent = Intent(this@Nyuka01_QRread, Main_Menu::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                    .show()
+            }
+        }
     }
 }

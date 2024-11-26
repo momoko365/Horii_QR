@@ -43,9 +43,19 @@ class Nyuka03_Barread: AppCompatActivity() {
     // itemsをクラス変数として定義
     private var items: List<Item> = mutableListOf()
 
+    private lateinit var screenReceiver: ScreenStateReceiver
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka03)
+
+        // ScreenStateReceiverの初期化と登録
+        screenReceiver = ScreenStateReceiver()
+        val screenfilter = IntentFilter().apply {
+            addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_SCREEN_OFF)
+        }
+        registerReceiver(screenReceiver, screenfilter)
 
         // ReaderManagerの初期化
         readerManager = ReaderManager.InitInstance(this)
@@ -59,7 +69,6 @@ class Nyuka03_Barread: AppCompatActivity() {
         val baraAll = findViewById<TextView>(R.id.baraall)
         //バラ数済み数テキスト
         val barazumiAll = findViewById<TextView>(R.id.barazumi)
-
         //商品点数テキスト
         val itemNum = findViewById<TextView>(R.id.itemNum)
         //商品点数済み数テキスト
@@ -77,7 +86,6 @@ class Nyuka03_Barread: AppCompatActivity() {
                 unlockScreen()
                 tyudanbtn.text = "作業中断"
                 tyudanbtn.setTextColor(Color.RED)
-
             } else {
                 // 画面ロック
                 lockScreen()
@@ -101,24 +109,25 @@ class Nyuka03_Barread: AppCompatActivity() {
             // データベースからデータを取得
             val kenpinNoValue = dao.getKenpinNo() //検品番号
             val distinctItemCount = dao.getDistinctItemCount() //商品点数
-//            val getCountOfZumiItems = dao.getCountOfMatchedItems() //商品点数済み数
+            val itemCheck = dao.getCSVdata() //商品点数済み数
             val caseTotal = dao.getTotalCase() //ケース数
             val casezumiTotal = dao.getCasezumi() //ケース数済み数
             val baraTotal = dao.getTotalBara() //バラ数
             val barazumiTotal = dao.getBarazumi() //バラ数済み数
-
-
             launch (Dispatchers.Main){
                 kenpinNo.text = kenpinNoValue //検品番号
                 itemNum.text = distinctItemCount.toString() //商品点数
-//                real_itemNum.text = getCountOfZumiItems.toString() //商品点数済み数
+                var count = 0
+                for (i in itemCheck) {
+                    if (i.totalBara == barazumiTotal && i.totalCasezumi == casezumiTotal) {
+                        count++
+                    }
+                }
+                real_itemNum.text = count.toString()// 商品点数済み数を表示
                 caseAll.text = caseTotal.toString() //ケース数
                 casezumiAll.text = casezumiTotal.toString() //ケース数済み数
                 baraAll.text = baraTotal.toString() //バラ数
                 barazumiAll.text = barazumiTotal.toString() //バラ数済み数
-
-
-
             }
         }
 
@@ -154,6 +163,7 @@ class Nyuka03_Barread: AppCompatActivity() {
             }
         })
     }
+
     // ハードウェアスキャン用の BroadcastReceiver
     private val scanDataReceiver = object : BroadcastReceiver() {
         //スキャン受信
@@ -174,7 +184,21 @@ class Nyuka03_Barread: AppCompatActivity() {
                     barcodedata.setText(data)
                     barcodedata.setSelection(barcodedata.text.length)
                     //有効なデータだった場合検索実行
-                    searchBarcodeAndNavigate(data!!)
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        val items = dao.getItemByCode(jan = data!!, itf = "")
+                        if (items.isNotEmpty()) {
+                            withContext(Dispatchers.Main) {
+                                val intent = Intent(this@Nyuka03_Barread, Nyuka04_Num::class.java)
+                                intent.putExtra("barcode", data)
+                                startActivity(intent)
+                                finish()
+                            }
+                        } else {
+                            withContext(Dispatchers.Main) {
+                                showAlertDialog("エラー", "コードが不正です")
+                            }
+                        }
+                    }
                 } else {
                     showAlertDialog("エラー", "コードが不正です")
                 }
@@ -200,6 +224,7 @@ class Nyuka03_Barread: AppCompatActivity() {
             }
         }
     }
+
     // エラーダイアログ表示の共通関数
     private fun showAlertDialog(title: String, message: String) {
         // ダイアログを表示
@@ -225,14 +250,13 @@ class Nyuka03_Barread: AppCompatActivity() {
                 lifecycleScope.launch(Dispatchers.IO) {
                     // バーコードを引数にしてDB検索
                     val items = barcodeInput?.let { dao.getItemByCode(jan = it, itf = "") } ?: emptyList()
-
                     withContext(Dispatchers.Main) {
-                        // 検索結果がnullまたは空の場合
-                        if (items.isEmpty()) {
-                            showAlertDialog("エラー", "検品商品が見つかりません")
-                        } else {
-                            // nullチェック
-                            if (barcodeInput != null) {
+                        // nullチェック
+                        if (barcodeInput != null) {
+                            // 検索結果がnullまたは空の場合
+                            if (items.isEmpty()) {
+                                showAlertDialog("エラー", "検品商品が見つかりません")
+                            } else {
                                 // テキストが空じゃないかチェック
                                 if (barcodeInput.isNotEmpty()) {
                                     barcodeInput.let { searchBarcodeAndNavigate(it) }
@@ -243,10 +267,11 @@ class Nyuka03_Barread: AppCompatActivity() {
                                 } else {
                                     showAlertDialog("エラー", "有効なJANまたはITFコードを入力してください")
                                 }
-                            } else {
-                                showAlertDialog("エラー", "バーコードを入力してください")
                             }
+                        } else {
+                            showAlertDialog("エラー", "バーコードを入力してください")
                         }
+
                     }
                 }
                 true
@@ -259,10 +284,23 @@ class Nyuka03_Barread: AppCompatActivity() {
                 finish()
                 true
             }
+
+            KeyEvent.KEYCODE_F6 -> {
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        // zumi数をすべて0に戻し、timeをnullにする
+                        dao.resetZumiAndTime()
+                    }
+                    // Nyuka02_KenpinStartへ遷移
+                    val intent = Intent(this@Nyuka03_Barread, Nyuka02_KenpinStart::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+                true
+            }
             else -> super.onKeyDown(keyCode, event)
         }
     }
-
 
     //画面ロック
     private fun lockScreen() {
@@ -301,6 +339,7 @@ class Nyuka03_Barread: AppCompatActivity() {
         unregisterReceiver(scanDataReceiver)
         // ReaderManagerの解放
         readerManager?.Release()
+        unregisterReceiver(screenReceiver)
     }
     // EditTextの入力を無効にするメソッド
     private fun disableEditText() {
@@ -317,5 +356,32 @@ class Nyuka03_Barread: AppCompatActivity() {
         }
         // ロックされていない場合は通常のキー処理
         return super.dispatchKeyEvent(event)
+    }
+
+    // ダイアログを表示するメソッド
+    fun showWorkingDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("作業中")
+            .setMessage("作業中です")
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    //指定した時間分スクリーンオフにしてたら起動するメソッド
+    fun resetDatabaseAndShowDialog() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            dao.deleteAllItems()
+            withContext(Dispatchers.Main) {
+                AlertDialog.Builder(this@Nyuka03_Barread)
+                    .setTitle("注意")
+                    .setMessage("全ての作業を取り消しました。メインメニューに戻ります。")
+                    .setPositiveButton("OK") { _, _ ->
+                        val intent = Intent(this@Nyuka03_Barread, Main_Menu::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                    .show()
+            }
+        }
     }
 }
