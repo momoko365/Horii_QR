@@ -401,13 +401,12 @@ class Nyuka03_Barread: AppCompatActivity() {
     //指定した時間分スクリーンオフにしてたら起動するメソッド
     fun resetDatabaseAndShowDialog() {
         val lockTime = getLockTimeFromPreferences()
-        val minutes = (lockTime / 1000) / 60
         lifecycleScope.launch(Dispatchers.IO) {
             dao.deleteAllItems()
             withContext(Dispatchers.Main) {
                 AlertDialog.Builder(this@Nyuka03_Barread)
                     .setTitle("注意")
-                    .setMessage("全ての作業を取り消しました。スクリーンオフの時間: ${minutes}分。メインメニューに戻ります。")
+                    .setMessage("全ての作業を取り消しました。メインメニューに戻ります。")
                     .setPositiveButton("OK") { _, _ ->
                         val intent = Intent(this@Nyuka03_Barread, Main_Menu::class.java)
                         startActivity(intent)

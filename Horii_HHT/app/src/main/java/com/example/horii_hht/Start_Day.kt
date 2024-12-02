@@ -64,22 +64,7 @@ class Start_Day : AppCompatActivity() {
                 false
             }
         }
-
-
-        // SharedPreferencesから最後のアクティビティを取得
-        val sharedPreferences = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
-        val lastActivity = sharedPreferences.getString("last_activity", null)
-
-        // 最後のアクティビティが存在する場合、そのアクティビティを開始
-        if (lastActivity != null) {
-            showResumeDialog(lastActivity)
-        } else {
-            // 通常の起動処理
-            setContentView(R.layout.activity_main)
-        }
     }
-
-
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
@@ -93,25 +78,6 @@ class Start_Day : AppCompatActivity() {
             else -> super.onKeyDown(keyCode, event)
         }
     }
-    // 中断されたところから再開するダイアログを表示
-    private fun showResumeDialog(activityName: String) {
-        AlertDialog.Builder(this)
-            .setTitle("再開")
-            .setMessage("中断されたところから再開します。")
-            .setPositiveButton("OK") { _, _ ->
-                try {
-                    val clazz = Class.forName("com.example.Horii_HHT.$activityName")
-                    val intent = Intent(this, clazz)
-                    startActivity(intent)
-                    finish()
-                } catch (e: ClassNotFoundException) {
-                    e.printStackTrace()
-                }
-            }
-            .setNegativeButton("キャンセル") { _, _ ->
-                // 通常の起動処理
-                setContentView(R.layout.activity_main)
-            }
-            .show()
-    }
+
+
 }
