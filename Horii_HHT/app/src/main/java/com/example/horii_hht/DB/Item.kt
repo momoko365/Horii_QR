@@ -23,8 +23,8 @@ data class Item(
     val JAN:String,
     //14桁
     val ITF:String,
-    val casezumi : Int,
-    val barazumi : Int,
+    var casezumi : Int,
+    var barazumi : Int,
     val kenpinTime : Long?
 )
 

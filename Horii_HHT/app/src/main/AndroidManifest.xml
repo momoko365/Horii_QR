@@ -8,7 +8,7 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/top_icon"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
@@ -24,7 +24,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".Start_Day"
             android:exported="true">
         </activity>
         <activity
@@ -36,7 +36,7 @@
             android:exported="false">
         </activity>
         <activity
-            android:name=".Nyuka01_QRread"
+            android:name=".nyuka.Nyuka01_QRread"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.cipherlab.barcode.GeneralString.Intent_PASS_TO_APP" />
@@ -47,7 +47,7 @@
 
         </activity>
         <activity
-            android:name=".Nyuka02_KenpinStart"
+            android:name=".nyuka.Nyuka02_KenpinStart"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.cipherlab.barcode.GeneralString.Intent_PASS_TO_APP" />
@@ -58,12 +58,12 @@
 
         </activity>
         <activity
-            android:name=".Nyuka03_Barread"
+            android:name=".nyuka.Nyuka03_Barread"
             android:exported="true">
 
         </activity>
         <activity
-            android:name=".Nyuka04_Num"
+            android:name=".nyuka.Nyuka04_Num"
             android:exported="true">
         </activity>
 
@@ -71,7 +71,7 @@
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
 
-        <activity android:name=".SettingsActivity" />
+        <activity android:name=".setting.SettingsActivity" />
     </application>
 
 </manifest>

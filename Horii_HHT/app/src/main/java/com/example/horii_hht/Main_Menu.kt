@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.horii_hht.nyuka.Nyuka01_QRread
+import com.example.horii_hht.setting.SettingsActivity
 
 class Main_Menu : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +47,7 @@ class Main_Menu : AppCompatActivity() {
             }
             KeyEvent.KEYCODE_F5 -> {
                 // F2キーが押されたときの処理
-                val intent = Intent(this,SettingsActivity::class.java)
+                val intent = Intent(this, SettingsActivity::class.java)
                 startActivity(intent)
                 finish()
                 true

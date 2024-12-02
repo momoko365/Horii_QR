@@ -7,14 +7,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import android.widget.EditText
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.room.Database
 import androidx.room.Room
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -89,7 +86,7 @@ private lateinit var workerCDEditText: EditText
             }
             KeyEvent.KEYCODE_F4 -> {
                 // F4キーが押されたときの処理
-                val intent = Intent(this, MainActivity::class.java)
+                val intent = Intent(this, Start_Day::class.java)
                 startActivity(intent)
                 finish()
                 true

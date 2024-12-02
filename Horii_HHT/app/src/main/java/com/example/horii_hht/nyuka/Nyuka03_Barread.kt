@@ -1,4 +1,4 @@
-package com.example.horii_hht
+package com.example.horii_hht.nyuka
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -10,11 +10,9 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.KeyEvent
 import android.view.View
-import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -24,9 +22,14 @@ import com.cipherlab.barcode.ReaderManager
 import com.example.horii_hht.DB.AppDatabase
 import com.example.horii_hht.DB.Item
 import com.example.horii_hht.DB.ItemDAO
+import com.example.horii_hht.Main_Menu
+import com.example.horii_hht.R
+import com.example.horii_hht.setting.ScreenStateReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Timer
+import java.util.TimerTask
 
 class Nyuka03_Barread: AppCompatActivity() {
     private lateinit var filter: IntentFilter
@@ -45,7 +48,7 @@ class Nyuka03_Barread: AppCompatActivity() {
 
     private lateinit var screenReceiver: ScreenStateReceiver
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override  fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka03)
 
@@ -78,6 +81,8 @@ class Nyuka03_Barread: AppCompatActivity() {
 
         //作業中断ボタン
         tyudanbtn = findViewById<Button>(R.id.startbtn)
+// SharedPreferencesの初期化
+        val sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
 
         // 作業中断ボタンのクリックリスナー
         tyudanbtn.setOnClickListener {
@@ -86,6 +91,8 @@ class Nyuka03_Barread: AppCompatActivity() {
                 unlockScreen()
                 tyudanbtn.text = "作業中断"
                 tyudanbtn.setTextColor(Color.RED)
+                // タイマーをキャンセル
+                timer?.cancel()
             } else {
                 // 画面ロック
                 lockScreen()
@@ -93,6 +100,8 @@ class Nyuka03_Barread: AppCompatActivity() {
                 tyudanbtn.setTextColor(Color.BLUE)
 //                disableEditText()
                 barcodedata.isEnabled = false
+                // タイマーを開始
+                startLockTimer()
             }
             isLocked = !isLocked
         }
@@ -162,6 +171,28 @@ class Nyuka03_Barread: AppCompatActivity() {
                 }
             }
         })
+    }
+
+    // タイマーを管理する変数
+    private var timer: Timer? = null
+
+    // タイマーを開始する関数
+    private fun startLockTimer() {
+        val lockTime = getLockTimeFromPreferences() // SharedPreferencesから時間を取得する関数
+        timer = Timer()
+        timer?.schedule(object : TimerTask() {
+            override fun run() {
+                // lock_timeの時間経過後にデータベース削除の処理を実行
+                resetDatabaseAndShowDialog()
+            }
+        }, lockTime)
+    }
+
+    // SharedPreferencesから時間を取得する関数
+    private fun getLockTimeFromPreferences(): Long {
+        val sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        // デフォルト値は5分（5 * 60 * 1000ミリ秒）
+        return sharedPreferences.getLong("lock_time", 5 * 60 * 1000L)
     }
 
     // ハードウェアスキャン用の BroadcastReceiver
@@ -369,12 +400,14 @@ class Nyuka03_Barread: AppCompatActivity() {
 
     //指定した時間分スクリーンオフにしてたら起動するメソッド
     fun resetDatabaseAndShowDialog() {
+        val lockTime = getLockTimeFromPreferences()
+        val minutes = (lockTime / 1000) / 60
         lifecycleScope.launch(Dispatchers.IO) {
             dao.deleteAllItems()
             withContext(Dispatchers.Main) {
                 AlertDialog.Builder(this@Nyuka03_Barread)
                     .setTitle("注意")
-                    .setMessage("全ての作業を取り消しました。メインメニューに戻ります。")
+                    .setMessage("全ての作業を取り消しました。スクリーンオフの時間: ${minutes}分。メインメニューに戻ります。")
                     .setPositiveButton("OK") { _, _ ->
                         val intent = Intent(this@Nyuka03_Barread, Main_Menu::class.java)
                         startActivity(intent)

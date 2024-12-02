@@ -1,4 +1,4 @@
-package com.example.horii_hht
+package com.example.horii_hht.nyuka
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -19,6 +19,9 @@ import com.cipherlab.barcode.ReaderManager
 import com.example.horii_hht.DB.AppDatabase
 import com.example.horii_hht.DB.Item
 import com.example.horii_hht.DB.ItemDAO
+import com.example.horii_hht.Main_Menu
+import com.example.horii_hht.R
+import com.example.horii_hht.setting.ScreenStateReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

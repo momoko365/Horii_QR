@@ -4,8 +4,6 @@
     <EditTextPreference
         android:key="lock_time"
         android:title="ﾘｾｯﾄ間隔変更(分)"
-        android:inputType="number"
         android:defaultValue="5"
-        android:summary="%s"
         android:layout="@layout/custom_edit_text_preference"/>)" />
 </PreferenceScreen>

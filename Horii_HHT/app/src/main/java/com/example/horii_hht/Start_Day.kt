@@ -1,16 +1,16 @@
 package com.example.horii_hht
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
-import android.widget.Button
 import android.widget.EditText
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import java.util.Calendar
 
-class MainActivity : AppCompatActivity() {
+class Start_Day : AppCompatActivity() {
 //    private lateinit var sd: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,6 +64,19 @@ class MainActivity : AppCompatActivity() {
                 false
             }
         }
+
+
+        // SharedPreferencesから最後のアクティビティを取得
+        val sharedPreferences = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+        val lastActivity = sharedPreferences.getString("last_activity", null)
+
+        // 最後のアクティビティが存在する場合、そのアクティビティを開始
+        if (lastActivity != null) {
+            showResumeDialog(lastActivity)
+        } else {
+            // 通常の起動処理
+            setContentView(R.layout.activity_main)
+        }
     }
 
 
@@ -79,5 +92,26 @@ class MainActivity : AppCompatActivity() {
 
             else -> super.onKeyDown(keyCode, event)
         }
+    }
+    // 中断されたところから再開するダイアログを表示
+    private fun showResumeDialog(activityName: String) {
+        AlertDialog.Builder(this)
+            .setTitle("再開")
+            .setMessage("中断されたところから再開します。")
+            .setPositiveButton("OK") { _, _ ->
+                try {
+                    val clazz = Class.forName("com.example.Horii_HHT.$activityName")
+                    val intent = Intent(this, clazz)
+                    startActivity(intent)
+                    finish()
+                } catch (e: ClassNotFoundException) {
+                    e.printStackTrace()
+                }
+            }
+            .setNegativeButton("キャンセル") { _, _ ->
+                // 通常の起動処理
+                setContentView(R.layout.activity_main)
+            }
+            .show()
     }
 }

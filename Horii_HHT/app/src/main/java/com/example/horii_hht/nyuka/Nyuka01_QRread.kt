@@ -1,4 +1,4 @@
-package com.example.horii_hht
+package com.example.horii_hht.nyuka
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -16,6 +16,9 @@ import com.cipherlab.barcode.ReaderManager
 import com.example.horii_hht.DB.AppDatabase
 import com.example.horii_hht.DB.Item
 import com.example.horii_hht.DB.ItemDAO
+import com.example.horii_hht.Main_Menu
+import com.example.horii_hht.R
+import com.example.horii_hht.setting.ScreenStateReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -63,7 +66,7 @@ class Nyuka01_QRread : AppCompatActivity() {
                 AppDatabase::class.java,
                 "app_database"
             ).fallbackToDestructiveMigration().build()
-            //データベース帯ジェクトの取得
+            //データベースオブジェクトの取得
             dao = db.itemDAO()
         }
     }
@@ -71,7 +74,6 @@ class Nyuka01_QRread : AppCompatActivity() {
     // スキャン結果を受け取るBroadcastReceiver
     private val scanDataReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-
 
             when (intent.action) {
                 GeneralString.Intent_PASS_TO_APP -> {

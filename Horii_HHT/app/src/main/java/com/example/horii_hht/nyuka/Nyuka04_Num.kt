@@ -1,4 +1,4 @@
-package com.example.horii_hht
+package com.example.horii_hht.nyuka
 
 import android.content.Intent
 import android.content.IntentFilter
@@ -11,8 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
-import com.cipherlab.barcode.GeneralString
-import com.cipherlab.barcode.ReaderManager
 import com.example.horii_hht.DB.AppDatabase
 import com.example.horii_hht.DB.Item
 import com.example.horii_hht.DB.ItemDAO
@@ -27,11 +25,11 @@ import android.Manifest
 import android.util.Log
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
+import com.example.horii_hht.Main_Menu
+import com.example.horii_hht.R
+import com.example.horii_hht.setting.ScreenStateReceiver
 
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 class Nyuka04_Num : AppCompatActivity() {
     private lateinit var db: AppDatabase
@@ -349,17 +347,13 @@ class Nyuka04_Num : AppCompatActivity() {
                         if (caseNumValue!! + itemData.totalCasezumi > itemData.totalCaseQ) {
                             withContext(Dispatchers.Main) {
                                 Log.d("ActivityState", "isFinishing: $isFinishing, isDestroyed: $isDestroyed")
-
                                 showAlertDialog("エラー", "ケース数が超えています")
                             }
                             return@withContext
                         } else {
-                            withContext(Dispatchers.IO) {
-                                if (item != null) {
-                                    dao.update(item.copy(casezumi = caseNumValue!! + itemData.totalCasezumi)!!)
-                                }
+                            if (item != null) {
+                                item.casezumi = caseNumValue!! + itemData.totalCasezumi
                             }
-                            Log.d("itemAll", itemAll.toString())
                         }
                     }
                     // バラ数の入力処理
@@ -371,14 +365,20 @@ class Nyuka04_Num : AppCompatActivity() {
                             }
                             return@withContext
                         } else {
-                            withContext(Dispatchers.IO) {
-                                dao.update(item!!.copy(barazumi = baraNumValue!! + itemData.totalBarazumi)!!)
+                            if (item != null) {
+                                item.barazumi = baraNumValue!! + itemData.totalBarazumi
                             }
                         }
                     }
-                        val intent = Intent(this@Nyuka04_Num, Nyuka03_Barread::class.java)
-                        startActivity(intent)
-                        finish()
+                    // データベースの更新
+                    withContext(Dispatchers.IO) {
+                        if (item != null) {
+                            dao.update(item)
+                        }
+                    }
+                    val intent = Intent(this@Nyuka04_Num, Nyuka03_Barread::class.java)
+                    startActivity(intent)
+                    finish()
                 }
             }
         }
@@ -415,12 +415,9 @@ class Nyuka04_Num : AppCompatActivity() {
                             }
                             return@withContext
                         } else {
-                            withContext(Dispatchers.IO) {
-                                if (item != null) {
-                                    dao.update(item.copy(casezumi = caseNumValue!! + itemData.totalCasezumi)!!)
-                                }
+                            if (item != null) {
+                                item.casezumi = caseNumValue!! + itemData.totalCasezumi
                             }
-                            Log.d("itemAll", itemAll.toString())
                         }
                     }
                     // バラ数の入力処理
@@ -432,9 +429,15 @@ class Nyuka04_Num : AppCompatActivity() {
                             }
                             return@withContext
                         } else {
-                            withContext(Dispatchers.IO) {
-                                dao.update(item!!.copy(barazumi = baraNumValue!! + itemData.totalBarazumi)!!)
+                            if (item != null) {
+                                item.barazumi = baraNumValue!! + itemData.totalBarazumi
                             }
+                        }
+                    }
+                    // データベースの更新
+                    withContext(Dispatchers.IO) {
+                        if (item != null) {
+                            dao.update(item)
                         }
                     }
                 }

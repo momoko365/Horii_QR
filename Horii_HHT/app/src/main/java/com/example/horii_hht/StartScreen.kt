@@ -13,9 +13,11 @@ class SplashActivity : AppCompatActivity() {
 
         // 数秒後に MainActivity に遷移
         Handler(Looper.getMainLooper()).postDelayed({
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, Start_Day::class.java)
             startActivity(intent)
             finish()
         }, 1500) // 1500ミリ秒（1.5秒）
+
+
     }
 }
