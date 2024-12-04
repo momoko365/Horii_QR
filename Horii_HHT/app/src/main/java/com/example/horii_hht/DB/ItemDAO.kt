@@ -99,4 +99,8 @@ fun getItemByKenpinNoAndItemCD(kenpinNo: String, itemCD: String): Item?
 
     @Query("UPDATE item SET barazumi = 0,casezumi = 0 ,kenpinTime = NULL")
    fun resetZumiAndTime()
+
+    @Query("SELECT MAX(kenpinTime) AS maxKenpinTime, MAX(QRTime) AS maxQRTime FROM Item")
+    fun getMaxTimes(): MaxTimes?
+
     }

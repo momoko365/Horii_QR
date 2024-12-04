@@ -5,6 +5,7 @@ import android.util.Log
 import java.io.File
 
 // システム終了時にファイルを削除するためのカスタムアプリケーション
+//エミュレーターでしか使えないらしい。実機は✖
 class DeleteFile: Application() {
     private lateinit var tempFile: File
 

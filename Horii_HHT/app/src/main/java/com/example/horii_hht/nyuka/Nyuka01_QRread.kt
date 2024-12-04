@@ -4,12 +4,16 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import androidx.room.Room
 import com.cipherlab.barcode.GeneralString
 import com.cipherlab.barcode.ReaderManager
@@ -27,33 +31,39 @@ import java.util.Date
 import java.util.Locale
 
 class Nyuka01_QRread : AppCompatActivity() {
-//インテントフィルターを初期化
-    private lateinit var filter: IntentFilter
-    //ReaderManagerを初期化
-    private var readerManager: ReaderManager? = null
-    //データベースを初期化
-    private lateinit var db: AppDatabase
-    //DAOを初期化
-    private lateinit var dao: ItemDAO
-    private lateinit var screenReceiver: ScreenStateReceiver
+    private lateinit var filter: IntentFilter //インテントフィルターを初期化
+    private var readerManager: ReaderManager? = null //ReaderManagerを初期化
+    private lateinit var db: AppDatabase //データベースを初期化
+    private lateinit var dao: ItemDAO //DAOを初期化
+    private lateinit var screenReceiver: ScreenStateReceiver //ScreenStateReceiverを初期化
+    private val handler = Handler(Looper.getMainLooper()) // ハンドラ
+    private val checkInterval: Long = 10000 // 10秒ごとにチェック
+
+    private val checkRunnable = object : Runnable { // チェック用のRunnable
+        override fun run() {
+            resetDatabaseAndShowDialog() // データベースをリセットしてダイアログ表示
+            handler.postDelayed(this, checkInterval) // 10秒後に再度実行
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka01)
 
-
+        // 定期的にresetDatabaseAndShowDialogを呼び出す
+        handler.post(checkRunnable)
         // ScreenStateReceiverの初期化と登録
         screenReceiver = ScreenStateReceiver()
+        // スクリーン用のインテントフィルター設定
         val screenfilter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_SCREEN_OFF)
         }
+        // スクリーンのオンオフのBroadcastReceiverの登録
         registerReceiver(screenReceiver, screenfilter)
 
         // ReaderManagerの初期化
         readerManager = ReaderManager.InitInstance(this)
-
-
         // インテントフィルタの初期化（ハードウェアスキャンをサポート）
         filter = IntentFilter().apply {
             addAction(GeneralString.Intent_PASS_TO_APP) // ハードウェアスキャン用
@@ -93,7 +103,8 @@ class Nyuka01_QRread : AppCompatActivity() {
 
                         // 現在の日時を取得
                         val currentDate = Date()
-// 日時を指定の形式でフォーマット
+
+                        // 日時を指定の形式でフォーマット
                         val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
                         val formattedDate = dateFormat.format(currentDate)
                         for (i in 0 until validDataParts step 8) {
@@ -180,6 +191,8 @@ class Nyuka01_QRread : AppCompatActivity() {
     // Activity破棄される時に呼び出されるライフサイクルメソッド
     override fun onDestroy() {
         super.onDestroy()
+        // ハンドラの停止
+        handler.removeCallbacks(checkRunnable)
         // BroadcastReceiverの解除
         unregisterReceiver(scanDataReceiver)
         // ReaderManagerの解放
@@ -198,20 +211,55 @@ class Nyuka01_QRread : AppCompatActivity() {
             .show()
     }
 
-    //指定した時間分スクリーンオフにしてたら起動するメソッド
+    //指定した時間分放置してたら起動するメソッド
     fun resetDatabaseAndShowDialog() {
         lifecycleScope.launch(Dispatchers.IO) {
-            dao.deleteAllItems()
-            withContext(Dispatchers.Main) {
-                AlertDialog.Builder(this@Nyuka01_QRread)
-                    .setTitle("注意")
-                    .setMessage("全ての作業を取り消しました。メインメニューに戻ります。")
-                    .setPositiveButton("OK") { _, _ ->
-                        val intent = Intent(this@Nyuka01_QRread, Main_Menu::class.java)
-                        startActivity(intent)
-                        finish()
+            // データベースから最大時間を取得
+            val maxTimes = dao.getMaxTimes()
+            // 取得した最大時間をログに出力
+            Log.d("Nyuka04_Num", "maxTimes: $maxTimes")
+            // 日時フォーマットの設定
+            val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
+            // maxKenpinTimeが空でない場合に解析
+            val maxKenpinDate = maxTimes?.maxKenpinTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
+            // maxQRTimeが空でない場合に解析
+            val maxQRDate = maxTimes?.maxQRTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
+            // maxKenpinDateとmaxQRDateのうち、より直近の時間の方を取得
+            val maxDate = when {
+                maxKenpinDate != null && maxQRDate != null -> maxOf(maxKenpinDate, maxQRDate)
+                maxKenpinDate != null -> maxKenpinDate
+                maxQRDate != null -> maxQRDate
+                else -> null
+            }
+
+            // maxDateがnullでない場合に処理を実行
+            if (maxDate != null) {
+                // 現在の日時を取得
+                val currentDate = Date()
+
+                // 設定した時間を取得
+                val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this@Nyuka01_QRread)
+                val lockTimeMinutes = sharedPreferences.getString("lock_time", "5")?.toLongOrNull() ?: 5
+                val lockTimeMillis = lockTimeMinutes * 60 * 1000
+
+                // 現在の日時と最大時間の差分が設定した時間を超えている場合
+                if (currentDate.time - maxDate.time >= lockTimeMillis) {
+                    // データベースの全アイテムを削除
+                    dao.deleteAllItems()
+                    // メインスレッドでダイアログを表示
+                    withContext(Dispatchers.Main) {
+                        AlertDialog.Builder(this@Nyuka01_QRread)
+                            .setTitle("注意")
+                            .setMessage("経過時間$lockTimeMillis 分。全ての作業を取り消しました。メインメニューに戻ります。")
+                            .setPositiveButton("OK") { _, _ ->
+                                // メインメニューに遷移
+                                val intent = Intent(this@Nyuka01_QRread, Main_Menu::class.java)
+                                startActivity(intent)
+                                finish()
+                            }
+                            .show()
                     }
-                    .show()
+                }
             }
         }
     }

@@ -22,12 +22,17 @@ import org.apache.commons.csv.CSVPrinter
 import java.io.File
 import java.io.FileWriter
 import android.Manifest
+import android.content.SharedPreferences
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
+import androidx.preference.PreferenceManager
 import com.example.horii_hht.Main_Menu
 import com.example.horii_hht.R
 import com.example.horii_hht.setting.ScreenStateReceiver
+//import com.example.horii_hht.setting.ScreenStateReceiver
 
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -35,15 +40,24 @@ import java.util.Date
 import java.util.Locale
 
 class Nyuka04_Num : AppCompatActivity() {
-    private lateinit var db: AppDatabase
-    private lateinit var dao: ItemDAO
+    private lateinit var db: AppDatabase // データベース
+    lateinit var dao: ItemDAO // DAO
     private var item: Item? = null // クラス変数として宣言
-    private lateinit var caseNum: EditText
-    private lateinit var baraNum: EditText
-    private lateinit var scannedData: String
-    private var caseNumValue: Int? = null
-    private var baraNumValue: Int? = null
-    private lateinit var screenReceiver: ScreenStateReceiver
+    private lateinit var caseNum: EditText // ケース数
+    private lateinit var baraNum: EditText // バラ数
+    private lateinit var scannedData: String // スキャンデータ
+    private var caseNumValue: Int? = null // ケース数の入力値
+    private var baraNumValue: Int? = null    // バラ数の入力値
+    private lateinit var screenReceiver: ScreenStateReceiver // スクリーンのオンオフのBroadcastReceiver
+    private val handler = Handler(Looper.getMainLooper()) // ハンドラ
+    private val checkInterval: Long = 10000 // 10秒ごとにチェック
+
+    private val checkRunnable = object : Runnable { // チェック用のRunnable
+        override fun run() {
+            resetDatabaseAndShowDialog() // データベースをリセットしてダイアログ表示
+            handler.postDelayed(this, checkInterval) // 10秒後に再度実行
+        }
+    }
 
     // 外部ストレージへの書き込みパーミッションのリクエスト要求
     companion object {
@@ -54,12 +68,16 @@ class Nyuka04_Num : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka04)
 
+        // 定期的にresetDatabaseAndShowDialogを呼び出す
+        handler.post(checkRunnable)
         // ScreenStateReceiverの初期化と登録
         screenReceiver = ScreenStateReceiver()
+        // スクリーン用のインテントフィルター設定
         val screenfilter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_SCREEN_OFF)
         }
+        // スクリーンのオンオフのBroadcastReceiverの登録
         registerReceiver(screenReceiver, screenfilter)
 
         // Intentで全画面からデータを取得
@@ -220,6 +238,9 @@ class Nyuka04_Num : AppCompatActivity() {
                         // データベースから全てのアイテムを取得
                         dao.getCSVdata()
                     }
+                    items.forEach { item ->
+                        Log.d("CSVData", "Item: ${item.itemCD}, ${item.itemName}, ${item.totalCaseQ}, ${item.totalCasezumi}, ${item.totalBara}, ${item.totalBarazumi}, ${item.JAN}, ${item.ITF}, ${item.kenpinTime}, ${item.QRTime}")
+                    }
                     // ファイル書き込み先のディレクトリを作成
                     val customDir = File("/storage/self/primary/horiitest")
                     if (!customDir.exists()) {
@@ -241,9 +262,9 @@ class Nyuka04_Num : AppCompatActivity() {
                     try {
                         // CSVファイルにデータを書き込む
                         FileWriter(csvFile).use { writer ->  //useはwriterオブジェクト使用後クローズ処理を自動で行う
-                            CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("商品コード", "商品名", "ケース数", "ケース済数", "バラ数", "バラ済数", "JAN", "ITF")).use { csvPrinter ->
+                            CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("商品コード", "商品名", "ケース数", "ケース済数", "バラ数", "バラ済数", "JAN", "ITF","最終検品時間","QR読込時間")).use { csvPrinter ->
                                 for (item in items) {
-                                    csvPrinter.printRecord(item.itemCD, item.itemName, item.totalCaseQ, item.totalCasezumi, item.totalBara, item.totalBarazumi, item.JAN, item.ITF)
+                                    csvPrinter.printRecord(item.itemCD, item.itemName, item.totalCaseQ, item.totalCasezumi, item.totalBara, item.totalBarazumi, item.JAN, item.ITF,item.kenpinTime,item.QRTime)
                                 }
                             }
                         }
@@ -300,8 +321,6 @@ class Nyuka04_Num : AppCompatActivity() {
                 //外部ストレージへの書き込みパーミッションがすでに許可されているかどうかをチェックして必要に応じてリクエストする関数
                 requestWritePermissionAndWriteCSV()
                 //メインメニューに遷移
-
-
             true
             }
             KeyEvent.KEYCODE_F6 -> {
@@ -375,7 +394,7 @@ class Nyuka04_Num : AppCompatActivity() {
 
                     // 現在の日時を取得
                     val currentDate = Date()
-// 日時を指定の形式でフォーマット
+                    // 日時を指定の形式でフォーマット
                     val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
                     val formattedDate = dateFormat.format(currentDate)
                     // データベースの更新
@@ -445,7 +464,7 @@ class Nyuka04_Num : AppCompatActivity() {
                     }
                     // 現在の日時を取得
                     val currentDate = Date()
-// 日時を指定の形式でフォーマット
+                    // 日時を指定の形式でフォーマット
                     val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
                     val formattedDate = dateFormat.format(currentDate)
                     // データベースの更新
@@ -470,7 +489,9 @@ class Nyuka04_Num : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // BroadcastReceiverの解除
+        // ハンドラのコールバックを削除
+        handler.removeCallbacks(checkRunnable)
+        // スクリーンのオンオフのBroadcastReceiverの解除
         unregisterReceiver(screenReceiver)
     }    // ダイアログを表示するメソッド
     fun showWorkingDialog() {
@@ -481,20 +502,55 @@ class Nyuka04_Num : AppCompatActivity() {
             .show()
     }
 
-    //指定した時間分スクリーンオフにしてたら起動するメソッド
+    //指定した時間分放置してたら起動するメソッド
     fun resetDatabaseAndShowDialog() {
         lifecycleScope.launch(Dispatchers.IO) {
-            dao.deleteAllItems()
-            withContext(Dispatchers.Main) {
-                AlertDialog.Builder(this@Nyuka04_Num)
-                    .setTitle("注意")
-                    .setMessage("全ての作業を取り消しました。メインメニューに戻ります。")
-                    .setPositiveButton("OK") { _, _ ->
-                        val intent = Intent(this@Nyuka04_Num, Main_Menu::class.java)
-                        startActivity(intent)
-                        finish()
+            // データベースから最大時間を取得
+            val maxTimes = dao.getMaxTimes()
+            // 取得した最大時間をログに出力
+            Log.d("Nyuka04_Num", "maxTimes: $maxTimes")
+            // 日時フォーマットの設定
+            val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
+            // maxKenpinTimeが空でない場合に解析
+            val maxKenpinDate = maxTimes?.maxKenpinTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
+            // maxQRTimeが空でない場合に解析
+            val maxQRDate = maxTimes?.maxQRTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
+            // maxKenpinDateとmaxQRDateのうち、より直近の時間の方を取得
+            val maxDate = when {
+                maxKenpinDate != null && maxQRDate != null -> maxOf(maxKenpinDate, maxQRDate)
+                maxKenpinDate != null -> maxKenpinDate
+                maxQRDate != null -> maxQRDate
+                else -> null
+            }
+
+            // maxDateがnullでない場合に処理を実行
+            if (maxDate != null) {
+                // 現在の日時を取得
+                val currentDate = Date()
+
+                // 設定した時間を取得
+                val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this@Nyuka04_Num)
+                val lockTimeMinutes = sharedPreferences.getString("lock_time", "5")?.toLongOrNull() ?: 5
+                val lockTimeMillis = lockTimeMinutes * 60 * 1000
+
+                // 現在の日時と最大時間の差分が設定した時間を超えている場合
+                if (currentDate.time - maxDate.time >= lockTimeMillis) {
+                    // データベースの全アイテムを削除
+                    dao.deleteAllItems()
+                    // メインスレッドでダイアログを表示
+                    withContext(Dispatchers.Main) {
+                        AlertDialog.Builder(this@Nyuka04_Num)
+                            .setTitle("注意")
+                            .setMessage("経過時間$lockTimeMillis 分。全ての作業を取り消しました。メインメニューに戻ります。")
+                            .setPositiveButton("OK") { _, _ ->
+                                // メインメニューに遷移
+                                val intent = Intent(this@Nyuka04_Num, Main_Menu::class.java)
+                                startActivity(intent)
+                                finish()
+                            }
+                            .show()
                     }
-                    .show()
+                }
             }
         }
     }

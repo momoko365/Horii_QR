@@ -46,6 +46,11 @@ data class Item(
         val totalBarazumi: Int,
         val JAN: String,
         val ITF: String,
-        val kenpinTime: Long?,
-        val QRTime: Long?
+        val kenpinTime: String?,
+        val QRTime: String?
     )
+
+data class MaxTimes(
+    val maxKenpinTime: String?,
+    val maxQRTime: String?
+)
