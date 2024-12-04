@@ -22,6 +22,9 @@ import com.example.horii_hht.setting.ScreenStateReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class Nyuka01_QRread : AppCompatActivity() {
 //インテントフィルターを初期化
@@ -88,6 +91,11 @@ class Nyuka01_QRread : AppCompatActivity() {
                         // データ挿入用のリスト
                         val itemsToInsert = mutableListOf<Item>()
 
+                        // 現在の日時を取得
+                        val currentDate = Date()
+// 日時を指定の形式でフォーマット
+                        val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
+                        val formattedDate = dateFormat.format(currentDate)
                         for (i in 0 until validDataParts step 8) {
                             val item = Item(
                                 id = 0,
@@ -101,7 +109,8 @@ class Nyuka01_QRread : AppCompatActivity() {
                                 ITF = dataParts[i + 7],
                                 casezumi = 0,
                                 barazumi = 0,
-                                kenpinTime = null
+                                kenpinTime = "",
+                                QRTime = formattedDate
                             )
 
                             // 挿入するアイテムをリストに追加

@@ -25,6 +25,9 @@ import com.example.horii_hht.setting.ScreenStateReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class Nyuka02_KenpinStart : AppCompatActivity() {
     private lateinit var db: AppDatabase
@@ -129,6 +132,12 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                                 val kenpinNo = dataParts[i]
                                 val kenpinpage = dataParts[i + 1]
 
+
+                                // 現在の日時を取得
+                                val currentDate = Date()
+// 日時を指定の形式でフォーマット
+                                val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
+                                val formattedDate = dateFormat.format(currentDate)
                                 // 既存のデータをチェック
                                 val count = dao.duplicationQR(kenpinNo, kenpinpage)
                                 if (count > 0) {
@@ -154,7 +163,8 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                                     ITF = dataParts[i + 7],
                                     casezumi = 0,
                                     barazumi = 0,
-                                    kenpinTime = null
+                                    kenpinTime = "",
+                                    QRTime = formattedDate
                                 )
                                 itemsToInsert.add(item)
                             }
@@ -169,8 +179,8 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                                 // UIスレッドでアクティビティを再起動
                                 withContext(Dispatchers.Main) {
                                     val intent = Intent(this@Nyuka02_KenpinStart, Nyuka02_KenpinStart::class.java)
-                                    startActivity(intent)
                                     finish() // 現在のアクティビティを終了
+                                    startActivity(intent)
                                 }
 
                             } catch (e: Exception) {

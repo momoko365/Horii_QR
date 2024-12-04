@@ -4,12 +4,18 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
 
 class SplashActivity : AppCompatActivity() {
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main) // activity_main を表示
+        setContentView(R.layout.activity_main)
 
         // 数秒後に MainActivity に遷移
         Handler(Looper.getMainLooper()).postDelayed({
@@ -17,7 +23,5 @@ class SplashActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }, 1500) // 1500ミリ秒（1.5秒）
-
-
     }
 }

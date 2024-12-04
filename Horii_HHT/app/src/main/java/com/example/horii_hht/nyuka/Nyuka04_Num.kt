@@ -30,6 +30,9 @@ import com.example.horii_hht.R
 import com.example.horii_hht.setting.ScreenStateReceiver
 
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class Nyuka04_Num : AppCompatActivity() {
     private lateinit var db: AppDatabase
@@ -297,8 +300,7 @@ class Nyuka04_Num : AppCompatActivity() {
                 //外部ストレージへの書き込みパーミッションがすでに許可されているかどうかをチェックして必要に応じてリクエストする関数
                 requestWritePermissionAndWriteCSV()
                 //メインメニューに遷移
-//            val intent = Intent(this, Main_Menu::class.java)
-//            startActivity(intent)
+
 
             true
             }
@@ -370,9 +372,16 @@ class Nyuka04_Num : AppCompatActivity() {
                             }
                         }
                     }
+
+                    // 現在の日時を取得
+                    val currentDate = Date()
+// 日時を指定の形式でフォーマット
+                    val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
+                    val formattedDate = dateFormat.format(currentDate)
                     // データベースの更新
                     withContext(Dispatchers.IO) {
                         if (item != null) {
+                            item.kenpinTime = formattedDate
                             dao.update(item)
                         }
                     }
@@ -434,9 +443,15 @@ class Nyuka04_Num : AppCompatActivity() {
                             }
                         }
                     }
+                    // 現在の日時を取得
+                    val currentDate = Date()
+// 日時を指定の形式でフォーマット
+                    val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
+                    val formattedDate = dateFormat.format(currentDate)
                     // データベースの更新
                     withContext(Dispatchers.IO) {
                         if (item != null) {
+                            item.kenpinTime = formattedDate
                             dao.update(item)
                         }
                     }

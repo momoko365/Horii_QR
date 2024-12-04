@@ -85,7 +85,9 @@ fun getItemByKenpinNoAndItemCD(kenpinNo: String, itemCD: String): Item?
             SUM(case_q) as totalCaseQ, 
             SUM(bara) as totalBara, 
             SUM(casezumi) as totalCasezumi, 
-            SUM(barazumi) as totalBarazumi 
+            SUM(barazumi) as totalBarazumi ,
+            MAX(kenpinTime) as kenpinTime,
+        MAX(QRTime) as QRTime
         FROM Item
         GROUP BY kenpinNo, itemCD
     """)
