@@ -13,8 +13,8 @@ import java.io.File
 import java.util.Calendar
 
 class Start_Day : AppCompatActivity() {
-//    private lateinit var sd: Button
-private lateinit var tempFile: File
+    //    private lateinit var sd: Button
+    private lateinit var tempFile: File
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -91,6 +91,7 @@ private lateinit var tempFile: File
             else -> super.onKeyDown(keyCode, event)
         }
     }
+
     override fun onDestroy() {
         super.onDestroy()
         // アプリ終了時処理

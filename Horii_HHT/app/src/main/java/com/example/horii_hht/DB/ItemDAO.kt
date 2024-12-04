@@ -8,38 +8,41 @@ import androidx.room.Update
 @Dao
 interface ItemDAO {
     @Insert
-     fun insert(items: List<Item>) // List<Item> 型の引数を受け取る
+    fun insert(items: List<Item>) // List<Item> 型の引数を受け取る
+
     @Query("SELECT * FROM Item")
     fun getItemAll(): List<Item>
 
     // 商品点数カウント
-  @Query("SELECT COUNT(DISTINCT itemCD) FROM Item")
- fun getDistinctItemCount(): Int
+    @Query("SELECT COUNT(DISTINCT itemCD) FROM Item")
+    fun getDistinctItemCount(): Int
 
- //リストのケース数合計
-  @Query("SELECT SUM(case_q) FROM Item")
-fun getTotalCase(): Int
-//リストのバラ数合計
+    //リストのケース数合計
+    @Query("SELECT SUM(case_q) FROM Item")
+    fun getTotalCase(): Int
+
+    //リストのバラ数合計
     @Query("SELECT SUM(bara) FROM Item")
     fun getTotalBara(): Int
 
     // 検品ナンバーを取得
-  @Query("SELECT kenpinNo FROM Item LIMIT 1")
-   fun getKenpinNo(): String?
+    @Query("SELECT kenpinNo FROM Item LIMIT 1")
+    fun getKenpinNo(): String?
 
-   // リストのバラ済み数合計
-   @Query("SELECT SUM(barazumi) FROM Item")
+    // リストのバラ済み数合計
+    @Query("SELECT SUM(barazumi) FROM Item")
     fun getBarazumi(): Int
 
     @Query("SELECT SUM(casezumi) FROM Item")
     fun getCasezumi(): Int
 
-//JANかITFが一致するアイテムを取得する（複数）
+    //JANかITFが一致するアイテムを取得する（複数）
     @Query("SELECT * FROM ITEM WHERE JAN = :jan OR ITF = :itf")
     fun getItemByCode(jan: String, itf: String): List<Item>
-//JANかITFが一致するアイテムを取得する（一つだけ）
+
+    //JANかITFが一致するアイテムを取得する（一つだけ）
     @Query("SELECT * FROM ITEM WHERE jan = :jan OR itf = :itf LIMIT 1")
-   fun getItemCode(jan: String, itf: String): Item?
+    fun getItemCode(jan: String, itf: String): Item?
 
     @Query("SELECT * FROM Item WHERE kenpinNo = :kenpinNo")
     fun getItemsByKenpinNo(kenpinNo: String): List<Item>
@@ -60,11 +63,12 @@ fun getTotalCase(): Int
 
 
     //検品ナンバーと商品コードが一致するアイテムを取得
-@Query("SELECT * FROM Item WHERE kenpinNo = :kenpinNo AND itemCD = :itemCD LIMIT 1")
-fun getItemByKenpinNoAndItemCD(kenpinNo: String, itemCD: String): Item?
+    @Query("SELECT * FROM Item WHERE kenpinNo = :kenpinNo AND itemCD = :itemCD LIMIT 1")
+    fun getItemByKenpinNoAndItemCD(kenpinNo: String, itemCD: String): Item?
 
     //検品ナンバーと商品コードが一致するアイテムをまとめて取得
-    @Query("""
+    @Query(
+        """
         SELECT 
             SUM(case_q) as totalCaseQ, 
             SUM(bara) as totalBara, 
@@ -72,10 +76,12 @@ fun getItemByKenpinNoAndItemCD(kenpinNo: String, itemCD: String): Item?
             SUM(barazumi) as totalBarazumi 
         FROM Item 
         WHERE ITF = :scannedData OR JAN = :scannedData
-    """)
- fun getSummarizedData(scannedData: String): SummarizedData
+    """
+    )
+    fun getSummarizedData(scannedData: String): SummarizedData
 
-    @Query("""
+    @Query(
+        """
         SELECT 
             kenpinNo, 
             itemCD, 
@@ -90,17 +96,18 @@ fun getItemByKenpinNoAndItemCD(kenpinNo: String, itemCD: String): Item?
         MAX(QRTime) as QRTime
         FROM Item
         GROUP BY kenpinNo, itemCD
-    """)
+    """
+    )
     fun getCSVdata(): List<CSVData>
 
-//既存データのチェック
-        @Query("SELECT COUNT(*) FROM Item WHERE kenpinNo = :kenpinNo AND kenpinpage = :kenpinpage")
-         fun duplicationQR(kenpinNo: String, kenpinpage: String): Int
+    //既存データのチェック
+    @Query("SELECT COUNT(*) FROM Item WHERE kenpinNo = :kenpinNo AND kenpinpage = :kenpinpage")
+    fun duplicationQR(kenpinNo: String, kenpinpage: String): Int
 
     @Query("UPDATE item SET barazumi = 0,casezumi = 0 ,kenpinTime = NULL")
-   fun resetZumiAndTime()
+    fun resetZumiAndTime()
 
     @Query("SELECT MAX(kenpinTime) AS maxKenpinTime, MAX(QRTime) AS maxQRTime FROM Item")
     fun getMaxTimes(): MaxTimes?
 
-    }
+}

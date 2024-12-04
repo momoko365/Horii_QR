@@ -38,6 +38,7 @@ class Main_Menu : AppCompatActivity() {
                 finish()
                 true
             }
+
             KeyEvent.KEYCODE_F1 -> {
                 // F1キーが押されたときの処理
                 val intent = Intent(this, Nyuka01_QRread::class.java)
@@ -45,6 +46,7 @@ class Main_Menu : AppCompatActivity() {
                 finish()
                 true
             }
+
             KeyEvent.KEYCODE_F5 -> {
                 // F2キーが押されたときの処理
                 val intent = Intent(this, SettingsActivity::class.java)
@@ -52,6 +54,7 @@ class Main_Menu : AppCompatActivity() {
                 finish()
                 true
             }
+
             KeyEvent.KEYCODE_ENTER -> {
                 // エンターキーが押されたときの処理を無効にする
                 false

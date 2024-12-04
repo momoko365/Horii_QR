@@ -168,9 +168,9 @@
         android:id="@+id/zaiko_q"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/textView18"
-        android:textSize="34sp"
         android:fontFamily="@font/sawarabi_gothic"
+        android:textSize="34sp"
+        app:layout_constraintBottom_toBottomOf="@+id/textView18"
         app:layout_constraintStart_toEndOf="@+id/textView18"
         app:layout_constraintTop_toTopOf="@+id/textView18" />
 
@@ -178,9 +178,9 @@
         android:id="@+id/textView21"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/sawarabi_gothic"
         android:text="ケース"
         android:textSize="34sp"
-        android:fontFamily="@font/sawarabi_gothic"
         app:layout_constraintBottom_toBottomOf="@+id/zaiko_q"
         app:layout_constraintStart_toEndOf="@+id/zaiko_q"
         app:layout_constraintTop_toTopOf="@+id/zaiko_q" />

@@ -17,9 +17,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class Start_Worker : AppCompatActivity() {
-private  lateinit var db: AppDatabase
-private lateinit var dao: WorkerDAO
-private lateinit var workerCDEditText: EditText
+    private lateinit var db: AppDatabase
+    private lateinit var dao: WorkerDAO
+    private lateinit var workerCDEditText: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,32 +30,32 @@ private lateinit var workerCDEditText: EditText
         workerCDEditText = findViewById<EditText>(R.id.workerCD)
 
         workerCDEditText.setOnKeyListener { v, keyCode, event ->
-     if (keyCode == KeyEvent.KEYCODE_SPACE) {
-         // スペースキーの入力を無効にする
-         true
-     } else {
-         false
-     }
- }
+            if (keyCode == KeyEvent.KEYCODE_SPACE) {
+                // スペースキーの入力を無効にする
+                true
+            } else {
+                false
+            }
+        }
 
         // データベースの初期化
-       lifecycleScope.launch {
-           withContext(Dispatchers.IO) {
-               db = Room.databaseBuilder(
-                   applicationContext,
-                   AppDatabase::class.java,
-                   "app_database"
-               ).fallbackToDestructiveMigration().build()
-               dao = db.workerDAO()
-               // 初期データが存在しない場合にのみデータを挿入
-               val workerCount = dao.getAll()
-               if (workerCount == 0) {
-                   // 初期データを挿入
-                   val initialWorker = Worker("1" ,"John Doe")
-                   dao.insert(initialWorker)
-           }
-           }
-       }
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                db = Room.databaseBuilder(
+                    applicationContext,
+                    AppDatabase::class.java,
+                    "app_database"
+                ).fallbackToDestructiveMigration().build()
+                dao = db.workerDAO()
+                // 初期データが存在しない場合にのみデータを挿入
+                val workerCount = dao.getAll()
+                if (workerCount == 0) {
+                    // 初期データを挿入
+                    val initialWorker = Worker("1", "John Doe")
+                    dao.insert(initialWorker)
+                }
+            }
+        }
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -78,12 +78,13 @@ private lateinit var workerCDEditText: EditText
                             .setMessage("コードの誤りです")
                             .setPositiveButton("OK", null)
                             .create()
-                                true
+                        true
                         dialog.show()
                     }
                 }
                 true
             }
+
             KeyEvent.KEYCODE_F4 -> {
                 // F4キーが押されたときの処理
                 val intent = Intent(this, Start_Day::class.java)
@@ -91,6 +92,7 @@ private lateinit var workerCDEditText: EditText
                 finish()
                 true
             }
+
             else -> super.onKeyDown(keyCode, event)
         }
     }

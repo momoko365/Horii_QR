@@ -39,7 +39,7 @@ import java.util.Locale
 import java.util.Timer
 import java.util.TimerTask
 
-class Nyuka03_Barread: AppCompatActivity() {
+class Nyuka03_Barread : AppCompatActivity() {
     private lateinit var filter: IntentFilter
     private var readerManager: ReaderManager? = null
     private lateinit var db: AppDatabase
@@ -47,10 +47,13 @@ class Nyuka03_Barread: AppCompatActivity() {
     private var data: String? = null
     private lateinit var barcodedata: EditText
     private lateinit var tyudanbtn: Button
+
     //画面ロックのフラグ
     private var isLocked: Boolean = false
+
     //スキャンデータのソースを識別するためのフラグを設定
     private var isScanner = false
+
     // itemsをクラス変数として定義
     private var items: List<Item> = mutableListOf()
 
@@ -65,7 +68,7 @@ class Nyuka03_Barread: AppCompatActivity() {
         }
     }
 
-    override  fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka03)
 
@@ -143,7 +146,7 @@ class Nyuka03_Barread: AppCompatActivity() {
             val casezumiTotal = dao.getCasezumi() //ケース数済み数
             val baraTotal = dao.getTotalBara() //バラ数
             val barazumiTotal = dao.getBarazumi() //バラ数済み数
-            launch (Dispatchers.Main){
+            launch(Dispatchers.Main) {
                 kenpinNo.text = kenpinNoValue //検品番号
                 itemNum.text = distinctItemCount.toString() //商品点数
                 var count = 0
@@ -171,8 +174,10 @@ class Nyuka03_Barread: AppCompatActivity() {
         barcodedata.addTextChangedListener(object : TextWatcher {
             //テキストが変更される直前に呼ばれる
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
             //テキストが変更されてる最中に呼ばれる
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
             //テキストが変更された直後に呼ばれる
             override fun afterTextChanged(s: Editable?) {
                 // ハードウェアスキャンからの入力なら処理をスキップ
@@ -295,12 +300,14 @@ class Nyuka03_Barread: AppCompatActivity() {
                 startActivity(intent)
                 true
             }
+
             KeyEvent.KEYCODE_F1 -> {
                 // barcodedata.text = キーボードからの入力、空だったらスキャンデータを使う
                 val barcodeInput = barcodedata.text.toString().ifEmpty { data }
                 lifecycleScope.launch(Dispatchers.IO) {
                     // バーコードを引数にしてDB検索
-                    val items = barcodeInput?.let { dao.getItemByCode(jan = it, itf = "") } ?: emptyList()
+                    val items =
+                        barcodeInput?.let { dao.getItemByCode(jan = it, itf = "") } ?: emptyList()
                     withContext(Dispatchers.Main) {
                         // nullチェック
                         if (barcodeInput != null) {
@@ -311,12 +318,16 @@ class Nyuka03_Barread: AppCompatActivity() {
                                 // テキストが空じゃないかチェック
                                 if (barcodeInput.isNotEmpty()) {
                                     barcodeInput.let { searchBarcodeAndNavigate(it) }
-                                    val intent = Intent(this@Nyuka03_Barread, Nyuka04_Num::class.java)
+                                    val intent =
+                                        Intent(this@Nyuka03_Barread, Nyuka04_Num::class.java)
                                     intent.putExtra("barcode", barcodeInput)
                                     startActivity(intent)
                                     finish()
                                 } else {
-                                    showAlertDialog("エラー", "有効なJANまたはITFコードを入力してください")
+                                    showAlertDialog(
+                                        "エラー",
+                                        "有効なJANまたはITFコードを入力してください"
+                                    )
                                 }
                             }
                         } else {
@@ -349,6 +360,7 @@ class Nyuka03_Barread: AppCompatActivity() {
                 }
                 true
             }
+
             else -> super.onKeyDown(keyCode, event)
         }
     }
@@ -394,6 +406,7 @@ class Nyuka03_Barread: AppCompatActivity() {
         readerManager?.Release()
         unregisterReceiver(screenReceiver)
     }
+
     // EditTextの入力を無効にするメソッド
     private fun disableEditText() {
         barcodedata.isEnabled = false // 入力を無効化
@@ -430,9 +443,11 @@ class Nyuka03_Barread: AppCompatActivity() {
             // 日時フォーマットの設定
             val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
             // maxKenpinTimeが空でない場合に解析
-            val maxKenpinDate = maxTimes?.maxKenpinTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
+            val maxKenpinDate =
+                maxTimes?.maxKenpinTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
             // maxQRTimeが空でない場合に解析
-            val maxQRDate = maxTimes?.maxQRTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
+            val maxQRDate =
+                maxTimes?.maxQRTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
             // maxKenpinDateとmaxQRDateのうち、より直近の時間の方を取得
             val maxDate = when {
                 maxKenpinDate != null && maxQRDate != null -> maxOf(maxKenpinDate, maxQRDate)
@@ -447,8 +462,10 @@ class Nyuka03_Barread: AppCompatActivity() {
                 val currentDate = Date()
 
                 // 設定した時間を取得
-                val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this@Nyuka03_Barread)
-                val lockTimeMinutes = sharedPreferences.getString("lock_time", "5")?.toLongOrNull() ?: 5
+                val sharedPreferences: SharedPreferences =
+                    PreferenceManager.getDefaultSharedPreferences(this@Nyuka03_Barread)
+                val lockTimeMinutes =
+                    sharedPreferences.getString("lock_time", "5")?.toLongOrNull() ?: 5
                 val lockTimeMillis = lockTimeMinutes * 60 * 1000
 
                 // 現在の日時と最大時間の差分が設定した時間を超えている場合

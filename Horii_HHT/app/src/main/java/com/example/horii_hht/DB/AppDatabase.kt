@@ -12,5 +12,5 @@ import kotlinx.coroutines.launch
 @Database(entities = [Worker::class, Item::class], version = 31, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun workerDAO(): WorkerDAO
-abstract fun itemDAO(): ItemDAO
+    abstract fun itemDAO(): ItemDAO
 }

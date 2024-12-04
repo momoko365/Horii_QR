@@ -166,7 +166,7 @@ class Nyuka04_Num : AppCompatActivity() {
         }
 
         // 完了ボタンがクリックされた時の処理
-        finishbtn.setOnClickListener{
+        finishbtn.setOnClickListener {
             //外部ストレージへの書き込みパーミッションがすでに許可されているかどうかをチェックして必要に応じてリクエストする関数
             requestWritePermissionAndWriteCSV()
             //メインメニューに遷移
@@ -181,15 +181,23 @@ class Nyuka04_Num : AppCompatActivity() {
         val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
         when {
             // (1) パーミッションがすでに許可されている場合
-            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED -> {
-               // CSV書き込み用の関数を実行
+            ContextCompat.checkSelfPermission(
+                this,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                // CSV書き込み用の関数を実行
                 writeDataToCSV()
             }
             //(2)パーミッションを許可するための説明が必要な場合
             shouldShowRequestPermissionRationale(permission) -> {
                 // ユーザーに説明のためのトーストを表示
-                Toast.makeText(this, "外部ストレージへの書き込みパーミッションが必要です。", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this,
+                    "外部ストレージへの書き込みパーミッションが必要です。",
+                    Toast.LENGTH_LONG
+                ).show()
             }
+
             else -> {
                 // (3) それ以外（初めてパーミッションをリクエストする場合）
                 requestPermissions(arrayOf(permission), REQUEST_WRITE_PERMISSION)
@@ -198,7 +206,11 @@ class Nyuka04_Num : AppCompatActivity() {
     }
 
     // ユーザーがパーミッションダイアログに応答した結果（許可か拒否）を受け取る関数
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_WRITE_PERMISSION) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
@@ -239,7 +251,10 @@ class Nyuka04_Num : AppCompatActivity() {
                         dao.getCSVdata()
                     }
                     items.forEach { item ->
-                        Log.d("CSVData", "Item: ${item.itemCD}, ${item.itemName}, ${item.totalCaseQ}, ${item.totalCasezumi}, ${item.totalBara}, ${item.totalBarazumi}, ${item.JAN}, ${item.ITF}, ${item.kenpinTime}, ${item.QRTime}")
+                        Log.d(
+                            "CSVData",
+                            "Item: ${item.itemCD}, ${item.itemName}, ${item.totalCaseQ}, ${item.totalCasezumi}, ${item.totalBara}, ${item.totalBarazumi}, ${item.JAN}, ${item.ITF}, ${item.kenpinTime}, ${item.QRTime}"
+                        )
                     }
                     // ファイル書き込み先のディレクトリを作成
                     val customDir = File("/storage/self/primary/horiitest")
@@ -248,7 +263,11 @@ class Nyuka04_Num : AppCompatActivity() {
                         val dirCreated = customDir.mkdirs()
                         if (!dirCreated) {
                             runOnUiThread {
-                                Toast.makeText(this@Nyuka04_Num, "ディレクトリの作成に失敗しました: ${customDir.absolutePath}", Toast.LENGTH_LONG).show()
+                                Toast.makeText(
+                                    this@Nyuka04_Num,
+                                    "ディレクトリの作成に失敗しました: ${customDir.absolutePath}",
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
                             return@launch
                         }
@@ -262,14 +281,43 @@ class Nyuka04_Num : AppCompatActivity() {
                     try {
                         // CSVファイルにデータを書き込む
                         FileWriter(csvFile).use { writer ->  //useはwriterオブジェクト使用後クローズ処理を自動で行う
-                            CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("商品コード", "商品名", "ケース数", "ケース済数", "バラ数", "バラ済数", "JAN", "ITF","最終検品時間","QR読込時間")).use { csvPrinter ->
+                            CSVPrinter(
+                                writer,
+                                CSVFormat.DEFAULT.withHeader(
+                                    "商品コード",
+                                    "商品名",
+                                    "ケース数",
+                                    "ケース済数",
+                                    "バラ数",
+                                    "バラ済数",
+                                    "JAN",
+                                    "ITF",
+                                    "最終検品時間",
+                                    "QR読込時間"
+                                )
+                            ).use { csvPrinter ->
                                 for (item in items) {
-                                    csvPrinter.printRecord(item.itemCD, item.itemName, item.totalCaseQ, item.totalCasezumi, item.totalBara, item.totalBarazumi, item.JAN, item.ITF,item.kenpinTime,item.QRTime)
+                                    csvPrinter.printRecord(
+                                        item.itemCD,
+                                        item.itemName,
+                                        item.totalCaseQ,
+                                        item.totalCasezumi,
+                                        item.totalBara,
+                                        item.totalBarazumi,
+                                        item.JAN,
+                                        item.ITF,
+                                        item.kenpinTime,
+                                        item.QRTime
+                                    )
                                 }
                             }
                         }
                         runOnUiThread {
-                            Toast.makeText(this@Nyuka04_Num, "CSVファイル書き出しに成功しました", Toast.LENGTH_LONG).show()
+                            Toast.makeText(
+                                this@Nyuka04_Num,
+                                "CSVファイル書き出しに成功しました",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                         withContext(Dispatchers.IO) {
                             // データベースのアイテムを全削除
@@ -281,7 +329,11 @@ class Nyuka04_Num : AppCompatActivity() {
                     } catch (e: IOException) {
                         e.printStackTrace()
                         runOnUiThread {
-                            Toast.makeText(this@Nyuka04_Num, "CSVファイルの書き出しに失敗しました: ${e.message}", Toast.LENGTH_LONG).show()
+                            Toast.makeText(
+                                this@Nyuka04_Num,
+                                "CSVファイルの書き出しに失敗しました: ${e.message}",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                     }
                 }
@@ -310,6 +362,7 @@ class Nyuka04_Num : AppCompatActivity() {
                 finish()
                 true
             }
+
             KeyEvent.KEYCODE_F7 -> {
                 // F7キーが押されたときの処理
                 val intent = Intent(this, Nyuka02_KenpinStart::class.java)
@@ -317,12 +370,14 @@ class Nyuka04_Num : AppCompatActivity() {
                 finish()
                 true
             }
+
             KeyEvent.KEYCODE_F8 -> {
                 //外部ストレージへの書き込みパーミッションがすでに許可されているかどうかをチェックして必要に応じてリクエストする関数
                 requestWritePermissionAndWriteCSV()
                 //メインメニューに遷移
-            true
+                true
             }
+
             KeyEvent.KEYCODE_F6 -> {
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
@@ -336,6 +391,7 @@ class Nyuka04_Num : AppCompatActivity() {
                 }
                 true
             }
+
             else -> super.onKeyDown(keyCode, event)
         }
     }
@@ -367,7 +423,10 @@ class Nyuka04_Num : AppCompatActivity() {
                         // ケース数がケース数合計を超えている場合
                         if (caseNumValue!! + itemData.totalCasezumi > itemData.totalCaseQ) {
                             withContext(Dispatchers.Main) {
-                                Log.d("ActivityState", "isFinishing: $isFinishing, isDestroyed: $isDestroyed")
+                                Log.d(
+                                    "ActivityState",
+                                    "isFinishing: $isFinishing, isDestroyed: $isDestroyed"
+                                )
                                 showAlertDialog("エラー", "ケース数が超えています")
                             }
                             return@withContext
@@ -438,7 +497,10 @@ class Nyuka04_Num : AppCompatActivity() {
                         // ケース数がケース数合計を超えている場合
                         if (caseNumValue!! + itemData.totalCasezumi > itemData.totalCaseQ) {
                             withContext(Dispatchers.Main) {
-                                Log.d("ActivityState", "isFinishing: $isFinishing, isDestroyed: $isDestroyed")
+                                Log.d(
+                                    "ActivityState",
+                                    "isFinishing: $isFinishing, isDestroyed: $isDestroyed"
+                                )
                                 showAlertDialog("エラー", "ケース数が超えています")
                             }
                             return@withContext
@@ -480,11 +542,11 @@ class Nyuka04_Num : AppCompatActivity() {
     }
 
     private fun showAlertDialog(title: String, message: String) {
-            AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("OK", null)
-                .show()
+        AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("OK", null)
+            .show()
     }
 
     override fun onDestroy() {
@@ -494,6 +556,7 @@ class Nyuka04_Num : AppCompatActivity() {
         // スクリーンのオンオフのBroadcastReceiverの解除
         unregisterReceiver(screenReceiver)
     }    // ダイアログを表示するメソッド
+
     fun showWorkingDialog() {
         AlertDialog.Builder(this)
             .setTitle("作業中")
@@ -512,9 +575,11 @@ class Nyuka04_Num : AppCompatActivity() {
             // 日時フォーマットの設定
             val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
             // maxKenpinTimeが空でない場合に解析
-            val maxKenpinDate = maxTimes?.maxKenpinTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
+            val maxKenpinDate =
+                maxTimes?.maxKenpinTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
             // maxQRTimeが空でない場合に解析
-            val maxQRDate = maxTimes?.maxQRTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
+            val maxQRDate =
+                maxTimes?.maxQRTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
             // maxKenpinDateとmaxQRDateのうち、より直近の時間の方を取得
             val maxDate = when {
                 maxKenpinDate != null && maxQRDate != null -> maxOf(maxKenpinDate, maxQRDate)
@@ -529,8 +594,10 @@ class Nyuka04_Num : AppCompatActivity() {
                 val currentDate = Date()
 
                 // 設定した時間を取得
-                val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this@Nyuka04_Num)
-                val lockTimeMinutes = sharedPreferences.getString("lock_time", "5")?.toLongOrNull() ?: 5
+                val sharedPreferences: SharedPreferences =
+                    PreferenceManager.getDefaultSharedPreferences(this@Nyuka04_Num)
+                val lockTimeMinutes =
+                    sharedPreferences.getString("lock_time", "5")?.toLongOrNull() ?: 5
                 val lockTimeMillis = lockTimeMinutes * 60 * 1000
 
                 // 現在の日時と最大時間の差分が設定した時間を超えている場合
@@ -554,5 +621,5 @@ class Nyuka04_Num : AppCompatActivity() {
             }
         }
     }
-    }
+}
 

@@ -15,40 +15,40 @@ data class Item(
     //10桁
     val itemName: String,
     //４桁
-    val case_q:Int,
+    val case_q: Int,
     //４桁
-    val bara:Int,
+    val bara: Int,
     //13桁
-    val JAN:String,
+    val JAN: String,
     //14桁
-    val ITF:String,
+    val ITF: String,
     var casezumi: Int,
     var barazumi: Int,
     var kenpinTime: String, //数量更新されたら時刻アップデート
     val QRTime: String //QRコード読み込んだ時間をアップデートしていく
 )
 
-    data class SummarizedData(
-        val totalCaseQ: Int,
-        val totalBara: Int,
-        val totalCasezumi: Int,
-        val totalBarazumi: Int
-    )
+data class SummarizedData(
+    val totalCaseQ: Int,
+    val totalBara: Int,
+    val totalCasezumi: Int,
+    val totalBarazumi: Int
+)
 
-    // SummarizedItemデータクラスを定義
-    data class CSVData(
-        val kenpinNo: String,
-        val itemCD: String,
-        val itemName: String,
-        val totalCaseQ: Int,
-        val totalBara: Int,
-        val totalCasezumi: Int,
-        val totalBarazumi: Int,
-        val JAN: String,
-        val ITF: String,
-        val kenpinTime: String?,
-        val QRTime: String?
-    )
+// SummarizedItemデータクラスを定義
+data class CSVData(
+    val kenpinNo: String,
+    val itemCD: String,
+    val itemName: String,
+    val totalCaseQ: Int,
+    val totalBara: Int,
+    val totalCasezumi: Int,
+    val totalBarazumi: Int,
+    val JAN: String,
+    val ITF: String,
+    val kenpinTime: String?,
+    val QRTime: String?
+)
 
 data class MaxTimes(
     val maxKenpinTime: String?,

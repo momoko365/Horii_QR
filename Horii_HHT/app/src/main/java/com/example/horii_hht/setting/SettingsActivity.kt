@@ -19,6 +19,7 @@ class SettingsActivity : AppCompatActivity() {
             .replace(R.id.settings_container, SettingsFragment())
             .commit()
     }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         //F4キーが押された場合はメインメニュー画面に遷移
         if (keyCode == KeyEvent.KEYCODE_F4) {

@@ -6,7 +6,7 @@ import java.io.File
 
 // システム終了時にファイルを削除するためのカスタムアプリケーション
 //エミュレーターでしか使えないらしい。実機は✖
-class DeleteFile: Application() {
+class DeleteFile : Application() {
     private lateinit var tempFile: File
 
     override fun onCreate() {
@@ -24,6 +24,7 @@ class DeleteFile: Application() {
             Log.d("SplashActivity", "ファイルは既に存在します: ${tempFile.absolutePath}")
         }
     }
+
     override fun onTerminate() {
         super.onTerminate()
         // アプリ終了時処理

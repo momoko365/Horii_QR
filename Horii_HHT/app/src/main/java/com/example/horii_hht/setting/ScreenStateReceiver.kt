@@ -31,18 +31,26 @@ class ScreenStateReceiver : BroadcastReceiver() {
                     val dao = (context as? Nyuka04_Num)?.dao
                     val maxTimes = dao?.getMaxTimes()
                     val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
-                    val maxKenpinDate = maxTimes?.maxKenpinTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
-                    val maxQRDate = maxTimes?.maxQRTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
+                    val maxKenpinDate = maxTimes?.maxKenpinTime?.takeIf { it.isNotEmpty() }
+                        ?.let { dateFormat.parse(it) }
+                    val maxQRDate = maxTimes?.maxQRTime?.takeIf { it.isNotEmpty() }
+                        ?.let { dateFormat.parse(it) }
                     val maxDate = when {
-                        maxKenpinDate != null && maxQRDate != null -> maxOf(maxKenpinDate, maxQRDate)
+                        maxKenpinDate != null && maxQRDate != null -> maxOf(
+                            maxKenpinDate,
+                            maxQRDate
+                        )
+
                         maxKenpinDate != null -> maxKenpinDate
                         maxQRDate != null -> maxQRDate
                         else -> null
                     }
 
                     if (maxDate != null) {
-                        val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-                        val lockTimeMinutes = sharedPreferences.getString("lock_time", "5")?.toLongOrNull() ?: 5
+                        val sharedPreferences: SharedPreferences =
+                            PreferenceManager.getDefaultSharedPreferences(context)
+                        val lockTimeMinutes =
+                            sharedPreferences.getString("lock_time", "5")?.toLongOrNull() ?: 5
                         val lockTimeMillis = lockTimeMinutes * 60 * 1000
 
                         if (currentTime - maxDate.time < lockTimeMillis) {
@@ -58,6 +66,7 @@ class ScreenStateReceiver : BroadcastReceiver() {
                     }
                 }
             }
+
             Intent.ACTION_SCREEN_OFF -> {
                 screenOffTime = System.currentTimeMillis()
                 Log.d("ScreenStateReceiver", "Screen OFF detected")

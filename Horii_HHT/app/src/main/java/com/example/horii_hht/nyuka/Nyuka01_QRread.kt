@@ -40,6 +40,7 @@ class Nyuka01_QRread : AppCompatActivity() {
     private val checkInterval: Long = 10000 // 10秒ごとにチェック
 
     private val checkRunnable = object : Runnable { // チェック用のRunnable
+
         override fun run() {
             resetDatabaseAndShowDialog() // データベースをリセットしてダイアログ表示
             handler.postDelayed(this, checkInterval) // 10秒後に再度実行
@@ -50,42 +51,32 @@ class Nyuka01_QRread : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka01)
 
-        // 定期的にresetDatabaseAndShowDialogを呼び出す
-        handler.post(checkRunnable)
-        // ScreenStateReceiverの初期化と登録
-        screenReceiver = ScreenStateReceiver()
-        // スクリーン用のインテントフィルター設定
-        val screenfilter = IntentFilter().apply {
+        handler.post(checkRunnable)  // 定期的にresetDatabaseAndShowDialogを呼び出す
+        screenReceiver = ScreenStateReceiver()  // ScreenStateReceiverの初期化と登録
+        val screenfilter = IntentFilter().apply {   // スクリーン用のインテントフィルター設定
             addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_SCREEN_OFF)
         }
-        // スクリーンのオンオフのBroadcastReceiverの登録
-        registerReceiver(screenReceiver, screenfilter)
+        registerReceiver(screenReceiver, screenfilter)  // スクリーンのオンオフのBroadcastReceiverの登録
 
-        // ReaderManagerの初期化
-        readerManager = ReaderManager.InitInstance(this)
-        // インテントフィルタの初期化（ハードウェアスキャンをサポート）
-        filter = IntentFilter().apply {
+        readerManager = ReaderManager.InitInstance(this) // ReaderManagerの初期化
+        filter = IntentFilter().apply {  // インテントフィルタの初期化（ハードウェアスキャンをサポート）
             addAction(GeneralString.Intent_PASS_TO_APP) // ハードウェアスキャン用
         }
+        registerReceiver(scanDataReceiver, filter)  // BroadcastReceiverの登録（スキャンデータのブロードキャスト受信準備）
 
-        // BroadcastReceiverの登録（スキャンデータのブロードキャスト受信準備）
-        registerReceiver(scanDataReceiver, filter)
-
-        // データベースの初期化
-        lifecycleScope.launch {
+        lifecycleScope.launch { // データベースの初期化
             db = Room.databaseBuilder(
                 applicationContext,
                 AppDatabase::class.java,
                 "app_database"
             ).fallbackToDestructiveMigration().build()
-            //データベースオブジェクトの取得
-            dao = db.itemDAO()
+
+            dao = db.itemDAO()   //データベースオブジェクトの取得
         }
     }
 
-    // スキャン結果を受け取るBroadcastReceiver
-    private val scanDataReceiver = object : BroadcastReceiver() {
+    private val scanDataReceiver = object : BroadcastReceiver() { // スキャン結果を受け取るBroadcastReceiver
         override fun onReceive(context: Context, intent: Intent) {
 
             when (intent.action) {
@@ -98,14 +89,11 @@ class Nyuka01_QRread : AppCompatActivity() {
                         var dataParts = cleanedData.split(",")
                         var validDataParts = (dataParts.size / 8) * 8
 
-                        // データ挿入用のリスト
-                        val itemsToInsert = mutableListOf<Item>()
+                        val itemsToInsert = mutableListOf<Item>()  // データ挿入用のリスト
 
-                        // 現在の日時を取得
-                        val currentDate = Date()
-
-                        // 日時を指定の形式でフォーマット
-                        val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
+                        val currentDate = Date()  // 現在の日時を取得
+                        val dateFormat = // 日時を指定の形式でフォーマット
+                            SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
                         val formattedDate = dateFormat.format(currentDate)
                         for (i in 0 until validDataParts step 8) {
                             val item = Item(
@@ -123,21 +111,19 @@ class Nyuka01_QRread : AppCompatActivity() {
                                 kenpinTime = "",
                                 QRTime = formattedDate
                             )
-
-                            // 挿入するアイテムをリストに追加
-                            itemsToInsert.add(item)
+                            itemsToInsert.add(item) // 挿入するアイテムをリストに追加
                         }
 
-                        // データベースに一括挿入
-                        lifecycleScope.launch(Dispatchers.IO) {
+                        lifecycleScope.launch(Dispatchers.IO) { // データベースに一括挿入
                             try {
                                 dao.insert(itemsToInsert)
                                 val allItem = dao.getItemAll()
-                                Log.d("Database","Current items in database: $allItem")
+                                Log.d("Database", "Current items in database: $allItem")
 
                                 // すべての処理が完了してから次の画面に遷移
                                 runOnUiThread {
-                                    val nextIntent = Intent(this@Nyuka01_QRread, Nyuka02_KenpinStart::class.java)
+                                    val nextIntent =
+                                        Intent(this@Nyuka01_QRread, Nyuka02_KenpinStart::class.java)
                                     startActivity(nextIntent)
                                     finish()
                                 }
@@ -162,6 +148,7 @@ class Nyuka01_QRread : AppCompatActivity() {
                         }
                     }
                 }
+
                 else -> {
                     if (!isFinishing && !isDestroyed) {
                         AlertDialog.Builder(this@Nyuka01_QRread)
@@ -175,15 +162,14 @@ class Nyuka01_QRread : AppCompatActivity() {
         }
     }
 
-
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
-            // F4キーが押されたときメインメニューに戻る処理
-            KeyEvent.KEYCODE_F4 -> {
+            KeyEvent.KEYCODE_F4 -> { // F4キーが押されたときメインメニューに戻る処理
                 val intent = Intent(this, Main_Menu::class.java)
                 startActivity(intent)
                 true
             }
+
             else -> super.onKeyDown(keyCode, event)
         }
     }
@@ -191,12 +177,9 @@ class Nyuka01_QRread : AppCompatActivity() {
     // Activity破棄される時に呼び出されるライフサイクルメソッド
     override fun onDestroy() {
         super.onDestroy()
-        // ハンドラの停止
-        handler.removeCallbacks(checkRunnable)
-        // BroadcastReceiverの解除
-        unregisterReceiver(scanDataReceiver)
-        // ReaderManagerの解放
-        readerManager?.Release()
+        handler.removeCallbacks(checkRunnable) // ハンドラの停止
+        unregisterReceiver(scanDataReceiver)  // BroadcastReceiverの解除
+        readerManager?.Release() // ReaderManagerの解放
         Log.d("ScanData", "Received raw data: ${intent.getStringExtra(GeneralString.BcReaderData)}")
         unregisterReceiver(screenReceiver)
 
@@ -214,16 +197,14 @@ class Nyuka01_QRread : AppCompatActivity() {
     //指定した時間分放置してたら起動するメソッド
     fun resetDatabaseAndShowDialog() {
         lifecycleScope.launch(Dispatchers.IO) {
-            // データベースから最大時間を取得
-            val maxTimes = dao.getMaxTimes()
-            // 取得した最大時間をログに出力
-            Log.d("Nyuka04_Num", "maxTimes: $maxTimes")
-            // 日時フォーマットの設定
-            val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
-            // maxKenpinTimeが空でない場合に解析
-            val maxKenpinDate = maxTimes?.maxKenpinTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
-            // maxQRTimeが空でない場合に解析
-            val maxQRDate = maxTimes?.maxQRTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
+            val maxTimes = dao.getMaxTimes()  // データベースから最大時間を取得
+            Log.d("Nyuka04_Num", "maxTimes: $maxTimes")  // 取得した最大時間をログに出力
+            val dateFormat =
+                SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())  // 日時フォーマットの設定
+            val maxKenpinDate = // maxKenpinTimeが空でない場合に解析
+                maxTimes?.maxKenpinTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
+            val maxQRDate =  // maxQRTimeが空でない場合に解析
+                maxTimes?.maxQRTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
             // maxKenpinDateとmaxQRDateのうち、より直近の時間の方を取得
             val maxDate = when {
                 maxKenpinDate != null && maxQRDate != null -> maxOf(maxKenpinDate, maxQRDate)
@@ -231,21 +212,18 @@ class Nyuka01_QRread : AppCompatActivity() {
                 maxQRDate != null -> maxQRDate
                 else -> null
             }
-
             // maxDateがnullでない場合に処理を実行
             if (maxDate != null) {
-                // 現在の日時を取得
-                val currentDate = Date()
-
+                val currentDate = Date()  // 現在の日時を取得
                 // 設定した時間を取得
-                val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this@Nyuka01_QRread)
-                val lockTimeMinutes = sharedPreferences.getString("lock_time", "5")?.toLongOrNull() ?: 5
+                val sharedPreferences: SharedPreferences =
+                    PreferenceManager.getDefaultSharedPreferences(this@Nyuka01_QRread)
+                val lockTimeMinutes =
+                    sharedPreferences.getString("lock_time", "5")?.toLongOrNull() ?: 5
                 val lockTimeMillis = lockTimeMinutes * 60 * 1000
-
                 // 現在の日時と最大時間の差分が設定した時間を超えている場合
                 if (currentDate.time - maxDate.time >= lockTimeMillis) {
-                    // データベースの全アイテムを削除
-                    dao.deleteAllItems()
+                    dao.deleteAllItems() // データベースの全アイテムを削除
                     // メインスレッドでダイアログを表示
                     withContext(Dispatchers.Main) {
                         AlertDialog.Builder(this@Nyuka01_QRread)

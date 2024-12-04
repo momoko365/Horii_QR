@@ -150,7 +150,8 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                                 // 現在の日時を取得
                                 val currentDate = Date()
 // 日時を指定の形式でフォーマット
-                                val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
+                                val dateFormat =
+                                    SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
                                 val formattedDate = dateFormat.format(currentDate)
                                 // 既存のデータをチェック
                                 val count = dao.duplicationQR(kenpinNo, kenpinpage)
@@ -192,7 +193,10 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
 
                                 // UIスレッドでアクティビティを再起動
                                 withContext(Dispatchers.Main) {
-                                    val intent = Intent(this@Nyuka02_KenpinStart, Nyuka02_KenpinStart::class.java)
+                                    val intent = Intent(
+                                        this@Nyuka02_KenpinStart,
+                                        Nyuka02_KenpinStart::class.java
+                                    )
                                     finish() // 現在のアクティビティを終了
                                     startActivity(intent)
                                 }
@@ -220,6 +224,7 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
             }
         }
     }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
             KeyEvent.KEYCODE_F7 -> {
@@ -237,13 +242,17 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                             itemNum.text = distinctItemCount.toString()
                             itemAll.text = totalSuryo.toString()
                         } else {
-                            Toast.makeText(this@Nyuka02_KenpinStart, "リセットに失敗しました。", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this@Nyuka02_KenpinStart,
+                                "リセットに失敗しました。",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                     withContext(Dispatchers.Main) {
                         withContext(Dispatchers.IO) {
-                          val allItem = dao.getItemAll()
-                            Log.d("Database","Current items in database: $allItem")
+                            val allItem = dao.getItemAll()
+                            Log.d("Database", "Current items in database: $allItem")
                         }
                         val intent = Intent(this@Nyuka02_KenpinStart, Nyuka01_QRread::class.java)
                         startActivity(intent)
@@ -252,6 +261,7 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                 }
                 true
             }
+
             else -> super.onKeyDown(keyCode, event)
         }
     }
@@ -286,9 +296,11 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
             // 日時フォーマットの設定
             val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
             // maxKenpinTimeが空でない場合に解析
-            val maxKenpinDate = maxTimes?.maxKenpinTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
+            val maxKenpinDate =
+                maxTimes?.maxKenpinTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
             // maxQRTimeが空でない場合に解析
-            val maxQRDate = maxTimes?.maxQRTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
+            val maxQRDate =
+                maxTimes?.maxQRTime?.takeIf { it.isNotEmpty() }?.let { dateFormat.parse(it) }
             // maxKenpinDateとmaxQRDateのうち、より直近の時間の方を取得
             val maxDate = when {
                 maxKenpinDate != null && maxQRDate != null -> maxOf(maxKenpinDate, maxQRDate)
@@ -303,8 +315,10 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                 val currentDate = Date()
 
                 // 設定した時間を取得
-                val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this@Nyuka02_KenpinStart)
-                val lockTimeMinutes = sharedPreferences.getString("lock_time", "5")?.toLongOrNull() ?: 5
+                val sharedPreferences: SharedPreferences =
+                    PreferenceManager.getDefaultSharedPreferences(this@Nyuka02_KenpinStart)
+                val lockTimeMinutes =
+                    sharedPreferences.getString("lock_time", "5")?.toLongOrNull() ?: 5
                 val lockTimeMillis = lockTimeMinutes * 60 * 1000
 
                 // 現在の日時と最大時間の差分が設定した時間を超えている場合

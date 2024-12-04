@@ -9,8 +9,10 @@ import androidx.room.Query
 interface WorkerDAO {
     @Query("SELECT * FROM Worker WHERE workerCD = :workerCD")
     fun getWorkerCD(workerCD: String): Worker?
+
     @Query("SELECT Count(*) FROM Worker")
     fun getAll(): Int
+
     @Insert
     fun insert(worker: Worker): Long
 }
