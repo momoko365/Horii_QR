@@ -22,6 +22,7 @@ import org.apache.commons.csv.CSVPrinter
 import java.io.File
 import java.io.FileWriter
 import android.Manifest
+import android.content.Context
 import android.content.SharedPreferences
 import android.os.Handler
 import android.os.Looper
@@ -608,7 +609,7 @@ class Nyuka04_Num : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         AlertDialog.Builder(this@Nyuka04_Num)
                             .setTitle("注意")
-                            .setMessage("経過時間$lockTimeMillis 分。全ての作業を取り消しました。メインメニューに戻ります。")
+                            .setMessage("経過時間$lockTimeMinutes 分。全ての作業を取り消しました。メインメニューに戻ります。")
                             .setPositiveButton("OK") { _, _ ->
                                 // メインメニューに遷移
                                 val intent = Intent(this@Nyuka04_Num, Main_Menu::class.java)
@@ -620,6 +621,14 @@ class Nyuka04_Num : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        val sharedPreferences = getSharedPreferences("AppState", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("scannedData", scannedData) // scannedDataを保存
+        editor.apply()
     }
 }
 

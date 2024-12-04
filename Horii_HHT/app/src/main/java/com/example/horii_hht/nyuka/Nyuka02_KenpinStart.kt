@@ -329,7 +329,7 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         AlertDialog.Builder(this@Nyuka02_KenpinStart)
                             .setTitle("注意")
-                            .setMessage("経過時間$lockTimeMillis 分。全ての作業を取り消しました。メインメニューに戻ります。")
+                            .setMessage("経過時間$lockTimeMinutes 分。全ての作業を取り消しました。メインメニューに戻ります。")
                             .setPositiveButton("OK") { _, _ ->
                                 // メインメニューに遷移
                                 val intent = Intent(this@Nyuka02_KenpinStart, Main_Menu::class.java)
@@ -341,5 +341,12 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                 }
             }
         }
+    }
+    override fun onPause() {
+        super.onPause()
+        val sharedPreferences = getSharedPreferences("AppState", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("lastActivity", this::class.java.simpleName)
+        editor.apply()
     }
 }
