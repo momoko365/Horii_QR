@@ -59,6 +59,11 @@ class Main_Menu : AppCompatActivity() {
                 // エンターキーが押されたときの処理を無効にする
                 false
             }
+            KeyEvent.KEYCODE_BACK -> {
+                // バックキーが押されたときの処理
+                true
+            }
+
 
             else -> super.onKeyDown(keyCode, event)
         }

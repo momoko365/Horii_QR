@@ -47,9 +47,13 @@ class Nyuka01_QRread : AppCompatActivity() {
         }
     }
 
+    private var source: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka01)
+
+        source = intent.getStringExtra("source")
 
         handler.post(checkRunnable)  // 定期的にresetDatabaseAndShowDialogを呼び出す
         screenReceiver = ScreenStateReceiver()  // ScreenStateReceiverの初期化と登録
@@ -85,7 +89,7 @@ class Nyuka01_QRread : AppCompatActivity() {
                     Log.d("ScanData", "Received raw data: $scannedData")
 
                     if (scannedData != null) {
-                        var cleanedData = scannedData.replace("\n", "")
+                        var cleanedData = scannedData.replace("\n", "").replace(":", "")
                         var dataParts = cleanedData.split(",")
                         var validDataParts = (dataParts.size / 8) * 8
 
@@ -169,6 +173,11 @@ class Nyuka01_QRread : AppCompatActivity() {
                 startActivity(intent)
                 true
             }
+            KeyEvent.KEYCODE_BACK -> {
+                // バックキーが押されたときの処理
+                true
+            }
+
 
             else -> super.onKeyDown(keyCode, event)
         }
@@ -243,9 +252,13 @@ class Nyuka01_QRread : AppCompatActivity() {
     }
     override fun onPause() {
         super.onPause()
-        val sharedPreferences = getSharedPreferences("AppState", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putString("lastActivity", this::class.java.simpleName)
-        editor.apply()
+//        if (source != "Start_Day") {
+            val sharedPreferences = getSharedPreferences("AppState", Context.MODE_PRIVATE)
+            val editor = sharedPreferences.edit()
+            editor.putString("lastActivity", this::class.java.simpleName)
+            editor.apply()
+//        }
     }
+
+
 }

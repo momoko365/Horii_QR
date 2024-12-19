@@ -88,10 +88,16 @@ class Start_Worker : AppCompatActivity() {
             KeyEvent.KEYCODE_F4 -> {
                 // F4キーが押されたときの処理
                 val intent = Intent(this, Start_Day::class.java)
+                intent.putExtra("fromStartWorker", "start_Worker")
                 startActivity(intent)
                 finish()
                 true
             }
+            KeyEvent.KEYCODE_BACK -> {
+                // バックキーが押されたときの処理
+                true
+            }
+
 
             else -> super.onKeyDown(keyCode, event)
         }

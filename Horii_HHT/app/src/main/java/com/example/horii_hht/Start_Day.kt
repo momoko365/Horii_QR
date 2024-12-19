@@ -5,50 +5,116 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
+import android.widget.Button
 import android.widget.EditText
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import androidx.room.Room
+import com.example.horii_hht.DB.AppDatabase
+import com.example.horii_hht.DB.ItemDAO
+import com.example.horii_hht.DB.Worker
+import com.example.horii_hht.DB.WorkerDAO
 import com.example.horii_hht.nyuka.Nyuka01_QRread
 import com.example.horii_hht.nyuka.Nyuka02_KenpinStart
 import com.example.horii_hht.nyuka.Nyuka03_Barread
 import com.example.horii_hht.nyuka.Nyuka04_Num
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Calendar
 
 class Start_Day : AppCompatActivity() {
     //    private lateinit var sd: Button
     private lateinit var tempFile: File
+    private var fromStartWorker: String? = null
+    private lateinit var db: AppDatabase
+    private lateinit var dao: ItemDAO
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.start_date)
 
-        val sharedPreferences = getSharedPreferences("AppState", Context.MODE_PRIVATE)
-        val lastActivity = sharedPreferences.getString("lastActivity", null)
 
-        if (lastActivity != null) {
-            val intent = when (lastActivity) {
-                "Nyuka01_QRread" -> Intent(this, Nyuka01_QRread::class.java)
-                "Nyuka02_KenpinStart" -> Intent(this, Nyuka02_KenpinStart::class.java)
-                "Nyuka03_Barread" -> Intent(this, Nyuka03_Barread::class.java)
-                "Nyuka04_Num" -> Intent(this, Nyuka03_Barread::class.java)
-                // 他のアクティビティも必要に応じて追加
-                else -> null
+        // データベースの初期化
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                db = Room.databaseBuilder(
+                    applicationContext,
+                    AppDatabase::class.java,
+                    "app_database"
+                ).fallbackToDestructiveMigration().build()
+                dao = db.itemDAO()
             }
-            intent?.let {
-                AlertDialog.Builder(this)
-                    .setTitle("再開確認")
-                    .setMessage("前回中断したところから再開しますか？")
-                    .setNegativeButton("いいえ", null)
-                    .setPositiveButton("はい") { _, _ ->
-                        startActivity(it)
-                        finish()
+
+            // `dao`の初期化が完了した後に実行する処理
+            fromStartWorker = intent.getStringExtra("fromStartWorker")
+            Log.d("Start_Day", "fromStartWorker: $fromStartWorker")
+
+            val sharedPreferences = getSharedPreferences("AppState", Context.MODE_PRIVATE)
+
+            if (fromStartWorker == "start_Worker") {
+                sharedPreferences.edit()
+                    .clear()
+                    .apply()
+                Log.d("SharedPreferences", "クリア後: ${sharedPreferences.getString("lastActivity", null)}")
+            }
+
+            val lastActivity = sharedPreferences.getString("lastActivity", null)
+            Log.d("SharedPreferences", "あるはず: $lastActivity")
+
+            if (lastActivity != null) {
+                val items = withContext(Dispatchers.IO) {
+                    dao.getItemAll() // データベースから全てのアイテムを取得
+                }
+
+                if (items.isNotEmpty()) {
+                    val intent = when (lastActivity) {
+                        "Nyuka01_QRread" -> Intent(this@Start_Day, Nyuka01_QRread::class.java)
+                        "Nyuka02_KenpinStart" -> Intent(this@Start_Day, Nyuka02_KenpinStart::class.java)
+                        "Nyuka03_Barread" -> Intent(this@Start_Day, Nyuka03_Barread::class.java)
+                        "Nyuka04_Num" -> Intent(this@Start_Day, Nyuka04_Num::class.java)
+                        else -> null
                     }
-                    .show()
+
+                    sharedPreferences.edit()
+                        .clear()
+                        .apply()
+
+                    intent?.putExtra("source", "Start_Day")
+                    intent?.putExtra("scannedData", sharedPreferences.getString("scannedData", null)) // scannedDataを追加
+
+                    intent?.let {
+                        val dialog = AlertDialog.Builder(this@Start_Day)
+                            .setTitle("再開確認")
+                            .setMessage("前回中断したところから再開しますか？")
+                            .setNegativeButton("いいえ") { _, _ ->
+                                lifecycleScope.launch {
+                                    withContext(Dispatchers.IO) {
+                                        dao.deleteAllItems()
+                                    }
+                                }
+                            }
+                            .setPositiveButton("はい") { _, _ ->
+                                startActivity(it)
+                                finish()
+                            }
+                            .create()
+
+                        dialog.setOnShowListener {
+                            // ダイアログ表示後に「はい」ボタンにフォーカスを設定
+                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).requestFocus()
+                        }
+
+                        dialog.show()
+                    }
+                }
             }
         }
+
 
         val yearEditText = findViewById<EditText>(R.id.year)
         val monthEditText = findViewById<EditText>(R.id.month)
@@ -118,6 +184,31 @@ class Start_Day : AppCompatActivity() {
                 startActivity(intent)
                 true
             }
+            KeyEvent.KEYCODE_F8 -> {
+
+                // ダイアログを作成
+                val builder = AlertDialog.Builder(this)
+                builder.setMessage("アプリを終了しますか？")
+                    .setCancelable(false) // ダイアログの外をタップしても閉じない
+                    .setPositiveButton("はい") { _, _ ->
+                        finishAndRemoveTask() // アプリのタスクを完全に終了
+                    }
+                    .setNegativeButton("いいえ") { dialog, _ ->
+
+                        dialog.dismiss() // ダイアログを閉じる
+
+                    }
+                // ダイアログを表示
+                val alertDialog = builder.create()
+                alertDialog.show()
+                    true
+
+            }
+            KeyEvent.KEYCODE_BACK -> {
+                // バックキーが押されたときの処理
+                true
+            }
+
 
             else -> super.onKeyDown(keyCode, event)
         }
@@ -134,5 +225,4 @@ class Start_Day : AppCompatActivity() {
             Log.d("MyApplication", "ファイルが削除されました: ${tempFile.absolutePath}")
         }
     }
-
 }

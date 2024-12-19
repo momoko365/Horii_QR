@@ -21,14 +21,24 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        //F4キーが押された場合はメインメニュー画面に遷移
-        if (keyCode == KeyEvent.KEYCODE_F4) {
-            val intent = Intent(this, Main_Menu::class.java)
-            startActivity(intent)
-            finish()
-            return true
+        return when (keyCode) {
+            //F4キーが押された場合はメインメニュー画面に遷移
+            KeyEvent.KEYCODE_F4 -> {
+                val intent = Intent(this, Main_Menu::class.java)
+                startActivity(intent)
+                finish()
+                true
+            }
+            KeyEvent.KEYCODE_BACK -> {
+                // バックキーが押されたときの処理
+                true
+            }
+
+            else -> super.onKeyDown(keyCode, event)
         }
+
         return super.onKeyDown(keyCode, event)
     }
+
 }
 

@@ -23,7 +23,7 @@
         android:fontFamily="@font/sawarabi_gothic"
         android:text="商品バーコード入力"
         android:textColor="#000000"
-        android:textSize="34sp"
+        android:textSize="40sp"
         app:layout_constraintBottom_toBottomOf="@+id/view"
         app:layout_constraintStart_toStartOf="@+id/view"
         app:layout_constraintTop_toTopOf="@+id/view" />
@@ -38,7 +38,7 @@
         android:layout_marginTop="8dp"
         android:fontFamily="@font/sawarabi_gothic"
         android:text="検品No："
-        android:textSize="24sp"
+        android:textSize="30sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/view" />
 
@@ -48,7 +48,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="64dp"
         android:fontFamily="@font/sawarabi_gothic"
-        android:textSize="24sp"
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="@+id/textView11"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView11"
@@ -60,11 +60,11 @@
         android:id="@+id/textView9"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:fontFamily="@font/sawarabi_gothic"
         android:text="商品点数"
-        android:textSize="24sp"
+        android:textSize="30sp"
         app:layout_constraintBottom_toTopOf="@+id/textView10"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView11" />
@@ -73,33 +73,33 @@
         android:id="@+id/real_itemNum"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:textSize="24sp"
+        android:fontFamily="monospace"
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="@+id/textView9"
         app:layout_constraintStart_toEndOf="@+id/textView9"
         app:layout_constraintTop_toTopOf="@+id/textView9" />
 
-    <TextView
-        android:id="@+id/textView12"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:fontFamily="@font/sawarabi_gothic"
-        android:text="/"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="@+id/real_itemNum"
-        app:layout_constraintStart_toEndOf="@+id/real_itemNum"
-        app:layout_constraintTop_toTopOf="@+id/real_itemNum" />
+    <!--    <TextView-->
+    <!--        android:id="@+id/textView12"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginStart="16dp"-->
+    <!--        android:fontFamily="@font/sawarabi_gothic"-->
+    <!--        android:text="/"-->
+    <!--        android:textSize="24sp"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@+id/real_itemNum"-->
+    <!--        app:layout_constraintStart_toEndOf="@+id/real_itemNum"-->
+    <!--        app:layout_constraintTop_toTopOf="@+id/real_itemNum" />-->
 
-    <TextView
-        android:id="@+id/itemNum"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="@+id/textView12"
-        app:layout_constraintStart_toEndOf="@+id/textView12"
-        app:layout_constraintTop_toTopOf="@+id/textView12" />
+    <!--    <TextView-->
+    <!--        android:id="@+id/itemNum"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginStart="16dp"-->
+    <!--        android:textSize="24sp"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@+id/textView12"-->
+    <!--        app:layout_constraintStart_toEndOf="@+id/textView12"-->
+    <!--        app:layout_constraintTop_toTopOf="@+id/textView12" />-->
     <!--商品点数ここまで↑-->
 
     <!--    ケース数↓-->
@@ -107,11 +107,11 @@
         android:id="@+id/textView10"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:fontFamily="@font/sawarabi_gothic"
         android:text="ケース数"
-        android:textSize="24sp"
+        android:textSize="30sp"
         app:layout_constraintBottom_toTopOf="@+id/textView9"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView9" />
@@ -120,34 +120,33 @@
         android:id="@+id/real_itemAll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
+        android:fontFamily="monospace"
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="@+id/textView10"
-        app:layout_constraintEnd_toEndOf="@+id/real_itemNum"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/real_itemNum"
+        app:layout_constraintStart_toEndOf="@+id/textView10"
         app:layout_constraintTop_toTopOf="@+id/textView10" />
 
-    <TextView
-        android:id="@+id/textView13"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:fontFamily="@font/sawarabi_gothic"
-        android:text="/"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="@+id/real_itemAll"
-        app:layout_constraintStart_toEndOf="@+id/real_itemAll"
-        app:layout_constraintTop_toTopOf="@+id/real_itemAll" />
+    <!--    <TextView-->
+    <!--        android:id="@+id/textView13"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginStart="16dp"-->
+    <!--        android:fontFamily="@font/sawarabi_gothic"-->
+    <!--        android:text="/"-->
+    <!--        android:textSize="24sp"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@+id/real_itemAll"-->
+    <!--        app:layout_constraintStart_toEndOf="@+id/real_itemAll"-->
+    <!--        app:layout_constraintTop_toTopOf="@+id/real_itemAll" />-->
 
-    <TextView
-        android:id="@+id/itemAll"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="@+id/real_itemAll"
-        app:layout_constraintStart_toEndOf="@+id/textView12"
-        app:layout_constraintTop_toTopOf="@+id/real_itemAll" />
+    <!--    <TextView-->
+    <!--        android:id="@+id/itemAll"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginStart="16dp"-->
+    <!--        android:textSize="24sp"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@+id/real_itemAll"-->
+    <!--        app:layout_constraintStart_toEndOf="@+id/textView12"-->
+    <!--        app:layout_constraintTop_toTopOf="@+id/real_itemAll" />-->
     <!--    ケース数↑-->
 
     <!--バラ数↓-->
@@ -155,10 +154,11 @@
         android:id="@+id/textView19"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:fontFamily="@font/sawarabi_gothic"
         android:text="バラ数"
-        android:textSize="24sp"
+        android:textSize="30sp"
         app:layout_constraintStart_toStartOf="@+id/textView10"
         app:layout_constraintTop_toBottomOf="@+id/textView10" />
 
@@ -166,35 +166,34 @@
         android:id="@+id/barazumi"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/sawarabi_gothic"
-        android:textSize="24sp"
+        android:fontFamily="monospace"
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="@+id/textView19"
-        app:layout_constraintEnd_toEndOf="@+id/real_itemAll"
-        app:layout_constraintStart_toStartOf="@+id/real_itemAll"
+        app:layout_constraintStart_toEndOf="@+id/textView10"
         app:layout_constraintTop_toTopOf="@+id/textView19" />
 
-    <TextView
-        android:id="@+id/textView23"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/sawarabi_gothic"
-        android:text="/"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="@+id/textView19"
-        app:layout_constraintEnd_toEndOf="@+id/textView13"
-        app:layout_constraintStart_toStartOf="@+id/textView13"
-        app:layout_constraintTop_toTopOf="@+id/textView19" />
+    <!--    <TextView-->
+    <!--        android:id="@+id/textView23"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:fontFamily="@font/sawarabi_gothic"-->
+    <!--        android:text="/"-->
+    <!--        android:textSize="24sp"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@+id/textView19"-->
+    <!--        app:layout_constraintEnd_toEndOf="@+id/textView13"-->
+    <!--        app:layout_constraintStart_toStartOf="@+id/textView13"-->
+    <!--        app:layout_constraintTop_toTopOf="@+id/textView19" />-->
 
-    <TextView
-        android:id="@+id/baraall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/sawarabi_gothic"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="@+id/textView23"
-        app:layout_constraintEnd_toEndOf="@+id/itemAll"
-        app:layout_constraintStart_toStartOf="@+id/itemAll"
-        app:layout_constraintTop_toTopOf="@+id/textView23" />
+    <!--    <TextView-->
+    <!--        android:id="@+id/baraall"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:fontFamily="@font/sawarabi_gothic"-->
+    <!--        android:textSize="24sp"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@+id/textView23"-->
+    <!--        app:layout_constraintEnd_toEndOf="@+id/itemAll"-->
+    <!--        app:layout_constraintStart_toStartOf="@+id/itemAll"-->
+    <!--        app:layout_constraintTop_toTopOf="@+id/textView23" />-->
     <!--    バラ数↑-->
 
     <!--    商品バーコードを入力してください-->
@@ -212,22 +211,22 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="100dp"
         android:fontFamily="@font/sawarabi_gothic"
-        android:text="商品バーコード\n入力してください"
+        android:text="バーコードを\n入力してください"
         android:textAlignment="center"
         android:textColor="#4CAF50"
-        android:textSize="34sp"
+        android:textSize="27sp"
         app:layout_constraintBottom_toTopOf="@+id/textView19"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/barcode"
-        app:layout_constraintVertical_bias="0.659" />
+        app:layout_constraintVertical_bias="0.668" />
 
     <EditText
         android:id="@+id/barcode"
         android:layout_width="320dp"
         android:layout_height="69dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
         android:background="@drawable/bg_edittext"
         android:ems="10"
         android:fontFamily="@font/sawarabi_gothic"
@@ -273,7 +272,7 @@
         android:layout_marginStart="8dp"
         android:fontFamily="@font/sawarabi_gothic"
         android:text="F1:確定"
-        android:textSize="24sp"
+        android:textSize="30sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/view2"
         app:layout_constraintTop_toTopOf="@+id/view2" />
@@ -284,7 +283,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/sawarabi_gothic"
         android:text="F6:ﾘｾｯﾄ"
-        android:textSize="24sp"
+        android:textSize="30sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/textView555"
         app:layout_constraintStart_toEndOf="@+id/textView3"
@@ -297,7 +296,7 @@
         android:layout_marginEnd="8dp"
         android:fontFamily="@font/sawarabi_gothic"
         android:text="F7:取消"
-        android:textSize="24sp"
+        android:textSize="30sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/view2" />

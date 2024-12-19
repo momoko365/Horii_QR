@@ -50,9 +50,13 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
         }
     }
 
+    private var source: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka02)
+
+        source = intent.getStringExtra("source")
 
         // 定期的にresetDatabaseAndShowDialogを呼び出す
         handler.post(checkRunnable)
@@ -130,7 +134,7 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                     scannedData = receivedData
 
                     // 改行文字を削除
-                    val cleanedData = scannedData!!.replace("\n", "")
+                    val cleanedData = scannedData!!.replace("\n", "").replace(":", "")
                     val dataParts = cleanedData.split(",")
 
                     // データ挿入用のリスト
@@ -262,6 +266,12 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                 true
             }
 
+            KeyEvent.KEYCODE_BACK -> {
+                // バックキーが押されたときの処理
+                true
+            }
+
+
             else -> super.onKeyDown(keyCode, event)
         }
     }
@@ -342,11 +352,14 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
             }
         }
     }
+
     override fun onPause() {
         super.onPause()
+//        if (source != "Start_Day") {
         val sharedPreferences = getSharedPreferences("AppState", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.putString("lastActivity", this::class.java.simpleName)
         editor.apply()
     }
+//    }
 }

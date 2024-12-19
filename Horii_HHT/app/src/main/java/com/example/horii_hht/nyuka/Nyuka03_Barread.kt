@@ -88,19 +88,21 @@ class Nyuka03_Barread : AppCompatActivity() {
         barcodedata = findViewById(R.id.barcode)
 
         //ｹｰｽ数テキスト
-        val caseAll = findViewById<TextView>(R.id.itemAll)
+//        val caseAll = findViewById<TextView>(R.id.itemAll)
         //ケース数済み数テキスト
         val casezumiAll = findViewById<TextView>(R.id.real_itemAll)
         //バラ数テキスト
-        val baraAll = findViewById<TextView>(R.id.baraall)
+//        val baraAll = findViewById<TextView>(R.id.baraall)
         //バラ数済み数テキスト
         val barazumiAll = findViewById<TextView>(R.id.barazumi)
         //商品点数テキスト
-        val itemNum = findViewById<TextView>(R.id.itemNum)
+//        val itemNum = findViewById<TextView>(R.id.itemNum)
         //商品点数済み数テキスト
         val real_itemNum = findViewById<TextView>(R.id.real_itemNum)
         //検品番号テキスト
         val kenpinNo = findViewById<TextView>(R.id.kenpinNo)
+
+
 
         //作業中断ボタン
         tyudanbtn = findViewById<Button>(R.id.startbtn)
@@ -148,18 +150,27 @@ class Nyuka03_Barread : AppCompatActivity() {
             val barazumiTotal = dao.getBarazumi() //バラ数済み数
             launch(Dispatchers.Main) {
                 kenpinNo.text = kenpinNoValue //検品番号
-                itemNum.text = distinctItemCount.toString() //商品点数
+//                itemNum.text = distinctItemCount.toString() //商品点数
                 var count = 0
                 for (i in itemCheck) {
-                    if (i.totalBara == barazumiTotal && i.totalCasezumi == casezumiTotal) {
+                    if (i.totalBara == i.totalBarazumi && i.totalCasezumi == i.totalCaseQ) {
                         count++
                     }
                 }
-                real_itemNum.text = count.toString()// 商品点数済み数を表示
-                caseAll.text = caseTotal.toString() //ケース数
-                casezumiAll.text = casezumiTotal.toString() //ケース数済み数
-                baraAll.text = baraTotal.toString() //バラ数
-                barazumiAll.text = barazumiTotal.toString() //バラ数済み数
+
+                val countFormat = String.format("%5d", count)
+                val distinctItemCountFormat = String.format("%5d", distinctItemCount)
+
+                val caseFormat = String.format("%5d", casezumiTotal)
+                val baraFormat = String.format("%5d", barazumiTotal)
+                val caseTotalFormat = String.format("%5d", caseTotal)
+                val baraTotalFormat = String.format("%5d", baraTotal)
+
+                real_itemNum.text = "$countFormat/$distinctItemCountFormat" // 商品点数済み数を表示
+//                caseAll.text = caseTotal.toString() //ケース数
+                casezumiAll.text = "$caseFormat/$caseTotalFormat" //ケース数済み数
+//                baraAll.text = baraTotal.toString() //バラ数
+                barazumiAll.text = "$baraFormat/$baraTotalFormat" //バラ数済み数
             }
         }
 
@@ -241,22 +252,32 @@ class Nyuka03_Barread : AppCompatActivity() {
                     barcodedata.setSelection(barcodedata.text.length)
                     //有効なデータだった場合検索実行
                     lifecycleScope.launch(Dispatchers.IO) {
-                        val items = dao.getItemByCode(jan = data!!, itf = "")
+                        val items = dao.getCSVdata(data!!)
+                        var itemBar = dao.getTotal(data!!)
                         if (items.isNotEmpty()) {
-                            withContext(Dispatchers.Main) {
-                                val intent = Intent(this@Nyuka03_Barread, Nyuka04_Num::class.java)
-                                intent.putExtra("barcode", data)
-                                startActivity(intent)
-                                finish()
+                            if (itemBar != null) {
+                                if (itemBar.bara == itemBar.barazumi && itemBar.case_q == itemBar.casezumi){
+                                    withContext(Dispatchers.Main) {
+                                        showAlertDialog("検品終了", "その商品は検品終了してます")
+                                        barcodedata.text.clear()
+                                    }
+                                }else{
+                                    val intent = Intent(this@Nyuka03_Barread, Nyuka04_Num::class.java)
+                                    intent.putExtra("barcode", data)
+                                    startActivity(intent)
+                                    finish()
+                                }
                             }
                         } else {
                             withContext(Dispatchers.Main) {
-                                showAlertDialog("エラー", "コードが不正です")
+                                showAlertDialog("エラー", "商品が見つかりません")
+                                barcodedata.text.clear()
                             }
                         }
                     }
                 } else {
                     showAlertDialog("エラー", "コードが不正です")
+                    barcodedata.text.clear()
                 }
             }
         }
@@ -294,46 +315,59 @@ class Nyuka03_Barread : AppCompatActivity() {
     // ファンクションキー入力処理
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
-            KeyEvent.KEYCODE_F4 -> {
-                // F4キーが押されたときの処理
-                val intent = Intent(this, Main_Menu::class.java)
-                startActivity(intent)
-                true
-            }
+//            KeyEvent.KEYCODE_F4 -> {
+//                // F4キーが押されたときの処理
+//                val intent = Intent(this, Main_Menu::class.java)
+//                startActivity(intent)
+//                true
+//            }
 
             KeyEvent.KEYCODE_F1 -> {
                 // barcodedata.text = キーボードからの入力、空だったらスキャンデータを使う
                 val barcodeInput = barcodedata.text.toString().ifEmpty { data }
                 lifecycleScope.launch(Dispatchers.IO) {
-                    // バーコードを引数にしてDB検索
-                    val items =
-                        barcodeInput?.let { dao.getItemByCode(jan = it, itf = "") } ?: emptyList()
-                    withContext(Dispatchers.Main) {
-                        // nullチェック
-                        if (barcodeInput != null) {
-                            // 検索結果がnullまたは空の場合
-                            if (items.isEmpty()) {
-                                showAlertDialog("エラー", "検品商品が見つかりません")
-                            } else {
-                                // テキストが空じゃないかチェック
-                                if (barcodeInput.isNotEmpty()) {
-                                    barcodeInput.let { searchBarcodeAndNavigate(it) }
-                                    val intent =
-                                        Intent(this@Nyuka03_Barread, Nyuka04_Num::class.java)
-                                    intent.putExtra("barcode", barcodeInput)
-                                    startActivity(intent)
-                                    finish()
-                                } else {
-                                    showAlertDialog(
-                                        "エラー",
-                                        "有効なJANまたはITFコードを入力してください"
-                                    )
+                    if (barcodeInput != null){
+                        if(barcodeInput.length == 13 || barcodeInput.length == 14) {
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                val items = dao.getCSVdata(barcodeInput)
+                                var itemBar = dao.getTotal(barcodeInput)
+
+                                withContext(Dispatchers.Main) {
+                                    if (itemBar != null) {
+                                        if (items.isNotEmpty()) {
+                                            if (itemBar.bara == itemBar.barazumi && itemBar.case_q == itemBar.casezumi){
+                                                withContext(Dispatchers.Main) {
+                                                    showAlertDialog("検品終了", "その商品は検品終了してます")
+                                                    barcodedata.text.clear()
+                                                }
+                                            }else{
+                                                val intent = Intent(this@Nyuka03_Barread, Nyuka04_Num::class.java)
+                                                intent.putExtra("barcode", barcodeInput)
+                                                startActivity(intent)
+                                                finish()
+                                            }
+
+                                        } else {
+                                            showAlertDialog("エラー", "商品が見つかりません")
+                                            barcodedata.text.clear()
+                                        }
+                                    }
                                 }
                             }
-                        } else {
-                            showAlertDialog("エラー", "バーコードを入力してください")
+                        }else{
+                            withContext(Dispatchers.Main) {
+                                showAlertDialog(
+                                    "エラー",
+                                    "有効なJANまたはITFコードを入力してください"
+                                )
+                                barcodedata.text.clear()
+                            }
                         }
-
+                    }else{
+                        withContext(Dispatchers.Main) {
+                            showAlertDialog("エラー", "バーコードを入力してください")
+                            barcodedata.text.clear()
+                        }
                     }
                 }
                 true
@@ -360,7 +394,10 @@ class Nyuka03_Barread : AppCompatActivity() {
                 }
                 true
             }
-
+            KeyEvent.KEYCODE_BACK -> {
+                // バックキーが押されたときの処理
+                true
+            }
             else -> super.onKeyDown(keyCode, event)
         }
     }
@@ -368,12 +405,12 @@ class Nyuka03_Barread : AppCompatActivity() {
     //画面ロック
     private fun lockScreen() {
         // ボタン以外すべてのビューを無効にする（画面ロック）
-        findViewById<View>(R.id.itemAll).isEnabled = false
+//        findViewById<View>(R.id.itemAll).isEnabled = false
         findViewById<View>(R.id.real_itemAll).isEnabled = false
-        findViewById<View>(R.id.itemNum).isEnabled = false
+//        findViewById<View>(R.id.itemNum).isEnabled = false
         findViewById<View>(R.id.real_itemNum).isEnabled = false
         findViewById<View>(R.id.kenpinNo).isEnabled = false
-        findViewById<View>(R.id.baraall).isEnabled = false
+//        findViewById<View>(R.id.baraall).isEnabled = false
         findViewById<View>(R.id.barazumi).isEnabled = false
         findViewById<EditText>(R.id.barcode).isEnabled = false
         // ボタンは無効化しない
@@ -383,12 +420,12 @@ class Nyuka03_Barread : AppCompatActivity() {
     //画面ロック解除
     private fun unlockScreen() {
         // ボタン以外のすべてのビューを有効にする例
-        findViewById<View>(R.id.itemAll).isEnabled = true
+//        findViewById<View>(R.id.itemAll).isEnabled = true
         findViewById<View>(R.id.real_itemAll).isEnabled = true
-        findViewById<View>(R.id.itemNum).isEnabled = true
+//        findViewById<View>(R.id.itemNum).isEnabled = true
         findViewById<View>(R.id.real_itemNum).isEnabled = true
         findViewById<View>(R.id.kenpinNo).isEnabled = true
-        findViewById<View>(R.id.baraall).isEnabled = true
+//        findViewById<View>(R.id.baraall).isEnabled = true
         findViewById<View>(R.id.barazumi).isEnabled = true
         findViewById<EditText>(R.id.barcode).isEnabled = true
         // ボタンは引き続き有効

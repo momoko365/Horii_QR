@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import org.jetbrains.annotations.NotNull
 
 @Dao
 interface ItemDAO {
@@ -49,6 +50,8 @@ interface ItemDAO {
 
     @Update
     fun update(item: Item)
+
+
 
     @Query("SELECT count(*) FROM Item")
     fun getItemCount(): Int
@@ -100,14 +103,69 @@ interface ItemDAO {
     )
     fun getCSVdata(): List<CSVData>
 
+
+    @Query(
+        """
+    SELECT 
+        kenpinNo, 
+        itemCD, 
+        itemName, 
+        JAN,
+        ITF,
+        SUM(case_q) as totalCaseQ, 
+        SUM(bara) as totalBara, 
+        SUM(casezumi) as totalCasezumi, 
+        SUM(barazumi) as totalBarazumi ,
+        MAX(kenpinTime) as kenpinTime,
+        MAX(QRTime) as QRTime
+    FROM Item
+    WHERE JAN = :scannedData OR ITF = :scannedData
+    GROUP BY kenpinNo, itemCD
+    """
+    )
+    fun getCSVdata(scannedData: String): List<CSVData>
+
+    @Query("""
+    SELECT
+    id,
+        kenpinNo,
+        kenpinpage,
+        itemCD,
+        itemName,
+        JAN,
+        ITF,
+        SUM(case_q) as case_q,
+        SUM(bara) as bara,
+        SUM(casezumi) as casezumi,
+        SUM(barazumi) as barazumi,
+        MAX(kenpinTime) as kenpinTime,
+        MAX(QRTime) as QRTime
+    FROM Item
+    WHERE JAN = :scannedData OR ITF = :scannedData
+    GROUP BY kenpinNo,  itemCD
+""")
+    fun getTotal(@NotNull scannedData: String): Item?
+
     //既存データのチェック
     @Query("SELECT COUNT(*) FROM Item WHERE kenpinNo = :kenpinNo AND kenpinpage = :kenpinpage")
     fun duplicationQR(kenpinNo: String, kenpinpage: String): Int
 
-    @Query("UPDATE item SET barazumi = 0,casezumi = 0 ,kenpinTime = NULL")
+    @Query("UPDATE item SET barazumi = 0,casezumi = 0 ,kenpinTime = null")
     fun resetZumiAndTime()
 
     @Query("SELECT MAX(kenpinTime) AS maxKenpinTime, MAX(QRTime) AS maxQRTime FROM Item")
     fun getMaxTimes(): MaxTimes?
+
+    @Query("""
+    SELECT 
+        CASE 
+            WHEN SUM(bara) = SUM(barazumi) AND SUM(case_q) = SUM(casezumi) 
+            THEN 1 
+            ELSE 0 
+        END AS isEqual
+    FROM 
+        Item
+""")
+    fun areSumsEqual(): Boolean
 
 }
