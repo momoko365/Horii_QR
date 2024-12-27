@@ -56,6 +56,41 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka02)
 
+        val QRread = findViewById<Button>(R.id.textView4)
+        QRread.setOnClickListener {
+            lifecycleScope.launch(Dispatchers.IO) {
+                scannedData = null
+                dao.deleteAllItems()
+                val distinctItemCount = dao.getDistinctItemCount() ?: 0
+                val totalSuryo = dao.getTotalCase() ?: 0
+                val totalBara = dao.getTotalBara() ?: 0
+                withContext(Dispatchers.Main) {
+                    if (distinctItemCount == 0 && totalSuryo == 0 && totalBara == 0) {
+                        val itemNum = findViewById<TextView>(R.id.real_itemNum)
+                        val itemAll = findViewById<TextView>(R.id.real_itemAll)
+                        itemNum.text = distinctItemCount.toString()
+                        itemAll.text = totalSuryo.toString()
+                    } else {
+                        Toast.makeText(
+                            this@Nyuka02_KenpinStart,
+                            "リセットに失敗しました。",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+                withContext(Dispatchers.Main) {
+                    withContext(Dispatchers.IO) {
+                        val allItem = dao.getItemAll()
+                        Log.d("Database", "Current items in database: $allItem")
+                    }
+                    val intent = Intent(this@Nyuka02_KenpinStart, Nyuka01_QRread::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            }
+            true
+        }
+
         source = intent.getStringExtra("source")
 
         // 定期的にresetDatabaseAndShowDialogを呼び出す
@@ -105,13 +140,14 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
             val totalCase = dao.getTotalCase()
             val totalBara = dao.getTotalBara()
             val kenpinNoValue = dao.getKenpinNo()
+            val kenpinpage = dao.getKenpinpage()
             val check = dao.getItemCount()
             // UIスレッドでテキストビューに値を設定
             launch(Dispatchers.Main) {
                 itemNum.text = distinctItemCount.toString()
                 caseAll.text = totalCase.toString()
                 baraAll.text = totalBara.toString()
-                kenpinNo.text = kenpinNoValue ?: "N/A"
+                kenpinNo.text = "$kenpinNoValue-$kenpinpage"
             }
         }
 

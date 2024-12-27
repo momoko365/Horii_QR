@@ -29,6 +29,8 @@ interface ItemDAO {
     // 検品ナンバーを取得
     @Query("SELECT kenpinNo FROM Item LIMIT 1")
     fun getKenpinNo(): String?
+    @Query("SELECT kenpinpage FROM Item ORDER BY QRTime DESC LIMIT 1")
+    fun getKenpinpage(): String?
 
     // リストのバラ済み数合計
     @Query("SELECT SUM(barazumi) FROM Item")
@@ -146,6 +148,9 @@ interface ItemDAO {
 """)
     fun getTotal(@NotNull scannedData: String): Item?
 
+    @Query("SELECT kenpinpage FROM Item WHERE JAN = :scannedData OR ITF = :scannedData")
+    fun getkenpinpagescandata(scannedData: String): String?
+
     //既存データのチェック
     @Query("SELECT COUNT(*) FROM Item WHERE kenpinNo = :kenpinNo AND kenpinpage = :kenpinpage")
     fun duplicationQR(kenpinNo: String, kenpinpage: String): Int
@@ -169,3 +174,4 @@ interface ItemDAO {
     fun areSumsEqual(): Boolean
 
 }
+

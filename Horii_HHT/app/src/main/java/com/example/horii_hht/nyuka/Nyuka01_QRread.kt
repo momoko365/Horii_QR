@@ -10,6 +10,8 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
+import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -53,6 +55,15 @@ class Nyuka01_QRread : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka01)
 
+        val back_btn = findViewById<Button>(R.id.back)
+
+        back_btn.setOnClickListener {
+            val intent = Intent(this, Main_Menu::class.java)
+            startActivity(intent)
+            finish()
+            true
+        }
+
         source = intent.getStringExtra("source")
 
         handler.post(checkRunnable)  // 定期的にresetDatabaseAndShowDialogを呼び出す
@@ -80,60 +91,77 @@ class Nyuka01_QRread : AppCompatActivity() {
         }
     }
 
-    private val scanDataReceiver = object : BroadcastReceiver() { // スキャン結果を受け取るBroadcastReceiver
+    private val scanDataReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == GeneralString.Intent_PASS_TO_APP) {
+                val receivedData = intent.getStringExtra(GeneralString.BcReaderData) ?: return
 
-            when (intent.action) {
-                GeneralString.Intent_PASS_TO_APP -> {
-                    var scannedData = intent.getStringExtra(GeneralString.BcReaderData)
-                    Log.d("ScanData", "Received raw data: $scannedData")
+                Log.d("ScanData", "Received raw data: $receivedData")
 
-                    if (scannedData != null) {
-                        var cleanedData = scannedData.replace("\n", "").replace(":", "")
-                        var dataParts = cleanedData.split(",")
-                        var validDataParts = (dataParts.size / 8) * 8
+                if (receivedData != null) {
 
-                        val itemsToInsert = mutableListOf<Item>()  // データ挿入用のリスト
 
-                        val currentDate = Date()  // 現在の日時を取得
-                        val dateFormat = // 日時を指定の形式でフォーマット
-                            SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
-                        val formattedDate = dateFormat.format(currentDate)
-                        for (i in 0 until validDataParts step 8) {
-                            val item = Item(
-                                id = 0,
-                                kenpinNo = dataParts[i],
-                                kenpinpage = dataParts[i + 1],
-                                itemCD = dataParts[i + 2],
-                                itemName = dataParts[i + 3],
-                                case_q = dataParts[i + 4].toInt(),
-                                bara = dataParts[i + 5].toInt(),
-                                JAN = dataParts[i + 6],
-                                ITF = dataParts[i + 7],
-                                casezumi = 0,
-                                barazumi = 0,
-                                kenpinTime = "",
-                                QRTime = formattedDate
-                            )
-                            itemsToInsert.add(item) // 挿入するアイテムをリストに追加
-                        }
+                    // 改行文字を削除
+                    val cleanedData = receivedData!!.replace("\n", "").replace(":", "")
+                    val dataParts = cleanedData.split(",")
 
-                        lifecycleScope.launch(Dispatchers.IO) { // データベースに一括挿入
+                    // データ挿入用のリスト
+                    val itemsToInsert = mutableListOf<Item>()
+
+                    // 7の倍数のデータだけ処理
+                    val validDataParts = (dataParts.size / 8) * 8
+
+                    if (validDataParts >= 8) {
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            for (i in 0 until validDataParts step 8) {
+                                val kenpinNo = dataParts[i]
+                                val kenpinpage = dataParts[i + 1]
+
+
+                                // 現在の日時を取得
+                                val currentDate = Date()
+// 日時を指定の形式でフォーマット
+                                val dateFormat =
+                                    SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
+                                val formattedDate = dateFormat.format(currentDate)
+
+                                val item = Item(
+                                    id = 0,
+                                    kenpinNo = kenpinNo,
+                                    kenpinpage = kenpinpage,
+                                    itemCD = dataParts[i + 2],
+                                    itemName = dataParts[i + 3],
+                                    case_q = dataParts[i + 4].toInt(),
+                                    bara = dataParts[i + 5].toInt(),
+                                    JAN = dataParts[i + 6],
+                                    ITF = dataParts[i + 7],
+                                    casezumi = 0,
+                                    barazumi = 0,
+                                    kenpinTime = "",
+                                    QRTime = formattedDate
+                                )
+                                itemsToInsert.add(item)
+                            }
+
                             try {
+                                // データベースにインサート
                                 dao.insert(itemsToInsert)
+
                                 val allItem = dao.getItemAll()
                                 Log.d("Database", "Current items in database: $allItem")
 
-                                // すべての処理が完了してから次の画面に遷移
-                                runOnUiThread {
+                                // UIスレッドでアクティビティを再起動
+                                withContext(Dispatchers.Main) {
                                     val nextIntent =
                                         Intent(this@Nyuka01_QRread, Nyuka02_KenpinStart::class.java)
                                     startActivity(nextIntent)
                                     finish()
                                 }
+
                             } catch (e: Exception) {
                                 e.printStackTrace()
-                                runOnUiThread {
+                                Log.e("DatabaseError", "Error during insertion", e)
+                                withContext(Dispatchers.Main) {
                                     AlertDialog.Builder(this@Nyuka01_QRread)
                                         .setTitle("エラー")
                                         .setMessage("不正なQRコードです。")
@@ -143,23 +171,11 @@ class Nyuka01_QRread : AppCompatActivity() {
                             }
                         }
                     } else {
-                        if (!isFinishing && !isDestroyed) {
-                            AlertDialog.Builder(this@Nyuka01_QRread)
-                                .setTitle("エラー")
-                                .setMessage("不正なQRコードです。")
-                                .setPositiveButton("OK", null)
-                                .show()
-                        }
-                    }
-                }
-
-                else -> {
-                    if (!isFinishing && !isDestroyed) {
-                        AlertDialog.Builder(this@Nyuka01_QRread)
-                            .setTitle("エラー")
-                            .setMessage("不正なQRコードです。")
-                            .setPositiveButton("OK", null)
-                            .show()
+                        Toast.makeText(
+                            this@Nyuka01_QRread,
+                            "スキャンデータが取得できませんでした",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
@@ -175,6 +191,10 @@ class Nyuka01_QRread : AppCompatActivity() {
             }
             KeyEvent.KEYCODE_BACK -> {
                 // バックキーが押されたときの処理
+                true
+            }
+            KeyEvent.KEYCODE_ENTER -> {
+                // エンターキーが押されたときの処理
                 true
             }
 

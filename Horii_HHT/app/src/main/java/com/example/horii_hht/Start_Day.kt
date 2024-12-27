@@ -14,8 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
 import com.example.horii_hht.DB.AppDatabase
 import com.example.horii_hht.DB.ItemDAO
-import com.example.horii_hht.DB.Worker
-import com.example.horii_hht.DB.WorkerDAO
+import com.example.horii_hht.databinding.StartDateBinding
 import com.example.horii_hht.nyuka.Nyuka01_QRread
 import com.example.horii_hht.nyuka.Nyuka02_KenpinStart
 import com.example.horii_hht.nyuka.Nyuka03_Barread
@@ -37,6 +36,38 @@ class Start_Day : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.start_date)
+
+
+
+        val kakutei_btn= findViewById<Button>(R.id.kakutei_btn)
+        val end_btn= findViewById<Button>(R.id.back_btn)
+
+        kakutei_btn.setOnClickListener {
+            val intent = Intent(this, Start_Worker::class.java)
+            startActivity(intent)
+            true
+
+        }
+
+        end_btn.setOnClickListener {
+            // ダイアログを作成
+            val builder = AlertDialog.Builder(this)
+            builder.setMessage("アプリを終了しますか？")
+                .setCancelable(false) // ダイアログの外をタップしても閉じない
+                .setPositiveButton("はい") { _, _ ->
+                    finishAndRemoveTask() // アプリのタスクを完全に終了
+                }
+                .setNegativeButton("いいえ") { dialog, _ ->
+
+                    dialog.dismiss() // ダイアログを閉じる
+
+                }
+            // ダイアログを表示
+            val alertDialog = builder.create()
+            alertDialog.show()
+            true
+        }
+
 
 
         // データベースの初期化
@@ -84,10 +115,24 @@ class Start_Day : AppCompatActivity() {
                         .clear()
                         .apply()
 
-                    intent?.putExtra("source", "Start_Day")
-                    intent?.putExtra("scannedData", sharedPreferences.getString("scannedData", null)) // scannedDataを追加
-
                     intent?.let {
+//                        CustomDialog.Builder(this@Start_Day)
+//                            .setTitle("再開確認")
+//                            .setMessage("前回中断したところから再開しますか")
+//                            .setPositiveButton("はい"){
+//                                startActivity(it)
+//                                finish()
+//                            }
+//                            .setNegativeButton("いいえ"){
+//                                lifecycleScope.launch {
+//                                    withContext(Dispatchers.IO) {
+//                                        dao.deleteAllItems()
+//                                    }
+//                                }
+//                            }
+//                            .build()
+//                            .show(supportFragmentManager, CustomDialog::class.simpleName)
+
                         val dialog = AlertDialog.Builder(this@Start_Day)
                             .setTitle("再開確認")
                             .setMessage("前回中断したところから再開しますか？")
@@ -103,10 +148,11 @@ class Start_Day : AppCompatActivity() {
                                 finish()
                             }
                             .create()
+                        dialog.setCancelable(false) // ダイアログの外をタップしても閉じない
 
                         dialog.setOnShowListener {
                             // ダイアログ表示後に「はい」ボタンにフォーカスを設定
-                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).requestFocus()
+                            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.requestFocus()
                         }
 
                         dialog.show()
@@ -202,14 +248,11 @@ class Start_Day : AppCompatActivity() {
                 val alertDialog = builder.create()
                 alertDialog.show()
                     true
-
             }
             KeyEvent.KEYCODE_BACK -> {
                 // バックキーが押されたときの処理
                 true
             }
-
-
             else -> super.onKeyDown(keyCode, event)
         }
     }
@@ -225,4 +268,9 @@ class Start_Day : AppCompatActivity() {
             Log.d("MyApplication", "ファイルが削除されました: ${tempFile.absolutePath}")
         }
     }
+
+
 }
+
+
+

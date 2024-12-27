@@ -38,29 +38,44 @@
         app:layout_constraintStart_toStartOf="parent" />
     <!--下部バーの中に表示するテキスト"F1 :確定"-->
     <!--下部バーの中に表示するテキスト"F4 :戻る"-->
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
+    <Button
+        android:id="@+id/back_btn"
+        android:layout_width="130dp"
+        android:layout_height="50dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/clear_button_bg"
         android:fontFamily="@font/sawarabi_gothic"
+        android:gravity="end|center_vertical"
+        android:padding="0dp"
         android:text="F4:戻る"
-        android:textSize="40sp"
+        android:textColor="#000000"
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/view2" />
+        app:layout_constraintEnd_toEndOf="@+id/view2"
+        app:layout_constraintTop_toTopOf="@+id/view2"
+        app:layout_constraintVertical_bias="0.0"
+        android:focusable="false"
+        android:focusableInTouchMode="false"/>
 
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+    <Button
+        android:id="@+id/kakutei_btn"
+        android:layout_width="130dp"
+        android:layout_height="50dp"
+
+        android:layout_marginStart="8dp"
+        android:background="@drawable/clear_button_bg"
         android:fontFamily="@font/sawarabi_gothic"
+        android:padding="0dp"
         android:text="F1:確定"
-        android:textSize="40sp"
+        android:textColor="#000000"
+
+        android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/view2"
-        app:layout_constraintTop_toTopOf="@+id/view2" />
+        app:layout_constraintTop_toTopOf="@+id/view2"
+        app:layout_constraintVertical_bias="1.0"
+        android:focusable="false"
+        android:focusableInTouchMode="false"/>
 
     <!--ただのテキスト-->
     <TextView

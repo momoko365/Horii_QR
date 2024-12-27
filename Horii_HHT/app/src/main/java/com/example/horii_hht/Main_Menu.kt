@@ -12,11 +12,27 @@ class Main_Menu : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_menu)
+
+        val settei_btn = findViewById<android.widget.Button>(R.id.textView5)
+        val back_btn = findViewById<android.widget.Button>(R.id.back_btn)
+
+        settei_btn .setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+            finish()
+            true
+        }
+        back_btn.setOnClickListener {
+            val intent = Intent(this, Start_Worker::class.java)
+            startActivity(intent)
+            finish()
+        }
+
         val nyukaBtn = findViewById<android.widget.Button>(R.id.nyukabtn)
         val syukkaBtn = findViewById<android.widget.Button>(R.id.syukkabtn)
         val tanaoroshiBtn = findViewById<android.widget.Button>(R.id.tanaoroshibtn)
         val checkBtn = findViewById<android.widget.Button>(R.id.checkbtn)
-        val view = findViewById<TextView>(R.id.textView4)
+        val view = findViewById<TextView>(R.id.textView)
         view.requestFocus()
 
 
@@ -61,6 +77,10 @@ class Main_Menu : AppCompatActivity() {
             }
             KeyEvent.KEYCODE_BACK -> {
                 // バックキーが押されたときの処理
+                true
+            }
+            KeyEvent.KEYCODE_ENTER -> {
+                // エンターキーが押されたときの処理
                 true
             }
 

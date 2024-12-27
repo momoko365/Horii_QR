@@ -47,3 +47,5 @@ data class MaxTimes(
     val maxKenpinTime: String?,
     val maxQRTime: String?
 )
+
+

@@ -6,6 +6,7 @@ import com.example.horii_hht.DB.WorkerDAO
 import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
+import android.widget.Button
 import android.widget.EditText
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
@@ -25,6 +26,42 @@ class Start_Worker : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.start_worker)
+
+        val kakutei_btn = findViewById<Button>(R.id.kakutei_btn)
+        val back_btn = findViewById<Button>(R.id.back_btn)
+
+        kakutei_btn.setOnClickListener {
+            workerCDEditText = findViewById<EditText>(R.id.workerCD)
+            workerCDEditText.setSelection(workerCDEditText.text.length) // カーソルを末尾に移動
+            val inputWorkerCD = workerCDEditText.text.toString()
+            lifecycleScope.launch {
+                val worker = withContext(Dispatchers.IO) { dao.getWorkerCD(inputWorkerCD) }
+                if (worker != null) {
+                    // workerCDが合致した場合、画面遷移
+                    val intent = Intent(this@Start_Worker, Main_Menu::class.java)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    // workerCDが合致しない場合、ダイアログ表示
+                    val dialog = AlertDialog.Builder(this@Start_Worker)
+                        .setTitle("エラー")
+                        .setMessage("コードの誤りです")
+                        .setPositiveButton("OK", null)
+                        .create()
+                    true
+                    dialog.show()
+                }
+            }
+            true
+        }
+
+        back_btn.setOnClickListener {
+            val intent = Intent(this, Start_Day::class.java)
+            intent.putExtra("fromStartWorker", "start_Worker")
+            startActivity(intent)
+            finish()
+            true
+        }
 
         // workerCDEditTextを初期化
         workerCDEditText = findViewById<EditText>(R.id.workerCD)
@@ -97,7 +134,10 @@ class Start_Worker : AppCompatActivity() {
                 // バックキーが押されたときの処理
                 true
             }
-
+            KeyEvent.KEYCODE_ENTER -> {
+                // エンターキーが押されたときの処理
+                true
+            }
 
             else -> super.onKeyDown(keyCode, event)
         }

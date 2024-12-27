@@ -25,6 +25,8 @@ import androidx.room.Room
 import com.cipherlab.barcode.GeneralString
 import com.cipherlab.barcode.ReaderManager
 import com.example.horii_hht.DB.AppDatabase
+import com.example.horii_hht.DB.Barcode
+import com.example.horii_hht.DB.BarcodeDAO
 import com.example.horii_hht.DB.Item
 import com.example.horii_hht.DB.ItemDAO
 import com.example.horii_hht.Main_Menu
@@ -44,9 +46,11 @@ class Nyuka03_Barread : AppCompatActivity() {
     private var readerManager: ReaderManager? = null
     private lateinit var db: AppDatabase
     private lateinit var dao: ItemDAO
+    private lateinit var barcodedao: BarcodeDAO
     private var data: String? = null
     private lateinit var barcodedata: EditText
     private lateinit var tyudanbtn: Button
+
 
     //画面ロックのフラグ
     private var isLocked: Boolean = false
@@ -72,6 +76,79 @@ class Nyuka03_Barread : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka03)
 
+        val kakutei_btn = findViewById<Button>(R.id.kakutei_btn)
+        val kenpinstart_btn = findViewById<Button>(R.id.textView555)
+
+        kakutei_btn.setOnClickListener {
+            // barcodedata.text = キーボードからの入力、空だったらスキャンデータを使う
+            val barcodeInput = barcodedata.text.toString().ifEmpty { data }
+            lifecycleScope.launch(Dispatchers.IO) {
+                if (barcodeInput != null){
+                    if(barcodeInput.length == 13 || barcodeInput.length == 14) {
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            val items = dao.getCSVdata(barcodeInput)
+                            var itemBar = dao.getTotal(barcodeInput)
+
+
+                            withContext(Dispatchers.Main) {
+                                if (itemBar != null) {
+                                    if (items.isNotEmpty()) {
+                                        if (itemBar.bara == itemBar.barazumi && itemBar.case_q == itemBar.casezumi){
+                                            withContext(Dispatchers.Main) {
+                                                showAlertDialog("検品終了", "その商品は検品終了してます")
+                                                barcodedata.text.clear()
+                                            }
+                                        }else{
+                                            lifecycleScope.launch(Dispatchers.IO) {
+                                                barcodedao.deleteAllBarcode()
+                                                val barcode = Barcode(code = barcodeInput)
+                                                barcodedao.insert(barcode)
+                                            }
+                                            val intent = Intent(this@Nyuka03_Barread, Nyuka04_Num::class.java)
+                                            intent.putExtra("barcode", barcodeInput)
+                                            startActivity(intent)
+                                            finish()
+                                        }
+
+                                    } else {
+                                        showAlertDialog("エラー", "商品が見つかりません")
+                                        barcodedata.text.clear()
+                                    }
+                                }
+                            }
+                        }
+                    }else{
+                        withContext(Dispatchers.Main) {
+                            showAlertDialog(
+                                "エラー",
+                                "有効なJANまたはITFコードを入力してください"
+                            )
+                            barcodedata.text.clear()
+                        }
+                    }
+                }else{
+                    withContext(Dispatchers.Main) {
+                        showAlertDialog("エラー", "バーコードを入力してください")
+                        barcodedata.text.clear()
+                    }
+                }
+            }
+            true
+        }
+
+        kenpinstart_btn.setOnClickListener {
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    // zumi数をすべて0に戻し、timeをnullにする
+                    dao.resetZumiAndTime()
+                }
+                // Nyuka02_KenpinStartへ遷移
+                val intent = Intent(this@Nyuka03_Barread, Nyuka02_KenpinStart::class.java)
+                startActivity(intent)
+                finish()
+            }
+            true
+        }
         // 定期的にresetDatabaseAndShowDialogを呼び出す
         handler.post(checkRunnable)
 
@@ -139,9 +216,12 @@ class Nyuka03_Barread : AppCompatActivity() {
                 "app_database"
             ).fallbackToDestructiveMigration().build()
             dao = db.itemDAO()
+            barcodedao = db.barcodeDAO()
+
 
             // データベースからデータを取得
             val kenpinNoValue = dao.getKenpinNo() //検品番号
+//            val kenpinpage = dao.getkenpinpagescandata()
             val distinctItemCount = dao.getDistinctItemCount() //商品点数
             val itemCheck = dao.getCSVdata() //商品点数済み数
             val caseTotal = dao.getTotalCase() //ケース数
@@ -262,6 +342,11 @@ class Nyuka03_Barread : AppCompatActivity() {
                                         barcodedata.text.clear()
                                     }
                                 }else{
+                                    lifecycleScope.launch(Dispatchers.IO) {
+                                        barcodedao.deleteAllBarcode()
+                                        val barcode = Barcode(code = data!!)
+                                        barcodedao.insert(barcode)
+                                    }
                                     val intent = Intent(this@Nyuka03_Barread, Nyuka04_Num::class.java)
                                     intent.putExtra("barcode", data)
                                     startActivity(intent)
@@ -332,6 +417,7 @@ class Nyuka03_Barread : AppCompatActivity() {
                                 val items = dao.getCSVdata(barcodeInput)
                                 var itemBar = dao.getTotal(barcodeInput)
 
+
                                 withContext(Dispatchers.Main) {
                                     if (itemBar != null) {
                                         if (items.isNotEmpty()) {
@@ -341,6 +427,11 @@ class Nyuka03_Barread : AppCompatActivity() {
                                                     barcodedata.text.clear()
                                                 }
                                             }else{
+                                                lifecycleScope.launch(Dispatchers.IO) {
+                                                    barcodedao.deleteAllBarcode()
+                                                    val barcode = Barcode(code = barcodeInput)
+                                                    barcodedao.insert(barcode)
+                                                }
                                                 val intent = Intent(this@Nyuka03_Barread, Nyuka04_Num::class.java)
                                                 intent.putExtra("barcode", barcodeInput)
                                                 startActivity(intent)
@@ -374,14 +465,6 @@ class Nyuka03_Barread : AppCompatActivity() {
             }
 
             KeyEvent.KEYCODE_F7 -> {
-                // F7キーが押されたときの処理
-                val intent = Intent(this, Nyuka02_KenpinStart::class.java)
-                startActivity(intent)
-                finish()
-                true
-            }
-
-            KeyEvent.KEYCODE_F6 -> {
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
                         // zumi数をすべて0に戻し、timeをnullにする
@@ -394,6 +477,20 @@ class Nyuka03_Barread : AppCompatActivity() {
                 }
                 true
             }
+
+//            KeyEvent.KEYCODE_F6 -> {
+//                lifecycleScope.launch {
+//                    withContext(Dispatchers.IO) {
+//                        // zumi数をすべて0に戻し、timeをnullにする
+//                        dao.resetZumiAndTime()
+//                    }
+//                    // Nyuka02_KenpinStartへ遷移
+//                    val intent = Intent(this@Nyuka03_Barread, Nyuka02_KenpinStart::class.java)
+//                    startActivity(intent)
+//                    finish()
+//                }
+//                true
+//            }
             KeyEvent.KEYCODE_BACK -> {
                 // バックキーが押されたときの処理
                 true
@@ -534,4 +631,5 @@ class Nyuka03_Barread : AppCompatActivity() {
         editor.putString("lastActivity", this::class.java.simpleName)
         editor.apply()
     }
+
 }

@@ -30,6 +30,7 @@ import android.util.Log
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.PreferenceManager
+import com.example.horii_hht.DB.BarcodeDAO
 import com.example.horii_hht.Main_Menu
 import com.example.horii_hht.R
 import com.example.horii_hht.setting.ScreenStateReceiver
@@ -44,6 +45,7 @@ import kotlin.coroutines.resume
 class Nyuka04_Num : AppCompatActivity() {
     private lateinit var db: AppDatabase // データベース
     lateinit var dao: ItemDAO // DAO
+    lateinit var barcodedao: BarcodeDAO
     private var item: Item? = null // クラス変数として宣言
     private lateinit var caseNum: EditText // ケース数
     private lateinit var baraNum: EditText // バラ数
@@ -72,6 +74,36 @@ class Nyuka04_Num : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.nyuka04)
 
+        val back_btn = findViewById<Button>(R.id.textView3333)
+        val kenpinstart_btn = findViewById<Button>(R.id.textView555)
+
+        back_btn.setOnClickListener {
+            lifecycleScope.launch {
+                if (!checkSumsAndShowDialog()) {
+                    val intent = Intent(this@Nyuka04_Num, Nyuka03_Barread::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            }
+            true
+        }
+
+        kenpinstart_btn.setOnClickListener {
+            lifecycleScope.launch {
+                if (!checkSumsAndShowDialog()) {
+                    withContext(Dispatchers.IO) {
+                        // zumi数をすべて0に戻し、timeをnullにする
+                        dao.resetZumiAndTime()
+                    }
+                    // Nyuka02_KenpinStartへ遷移
+                    val intent = Intent(this@Nyuka04_Num, Nyuka02_KenpinStart::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            }
+            true
+        }
+
         // 定期的にresetDatabaseAndShowDialogを呼び出す
         handler.post(checkRunnable)
         // ScreenStateReceiverの初期化と登録
@@ -85,7 +117,7 @@ class Nyuka04_Num : AppCompatActivity() {
         registerReceiver(screenReceiver, screenfilter)
 
         // Intentで全画面からデータを取得
-        scannedData = intent.getStringExtra("barcode").toString()
+//        scannedData = intent.getStringExtra("barcode").toString()
 
         //検品番号テキスト
         val kenpinNo = findViewById<android.widget.TextView>(R.id.kenpinNo)
@@ -113,6 +145,24 @@ class Nyuka04_Num : AppCompatActivity() {
         //完了ボタン
         val finishbtn = findViewById<Button>(R.id.button2)
 
+        caseNum.setOnKeyListener { v, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+                baraNum.requestFocus()
+                true
+            } else {
+                false
+            }
+        }
+
+        baraNum.setOnKeyListener { v, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+                caseNum.requestFocus()
+                true
+            } else {
+                false
+            }
+        }
+
         // 次へボタンクリックした時の処理
         nextbtn.setOnClickListener {
             lifecycleScope.launch {
@@ -129,10 +179,12 @@ class Nyuka04_Num : AppCompatActivity() {
                 "app_database"
             ).fallbackToDestructiveMigration().build()
             dao = db.itemDAO()
+            barcodedao = db.barcodeDAO()
+            scannedData = barcodedao.getBarcodeAll()?.code ?: ""
             // 商品名を取得
-            val item = if (scannedData != null && scannedData.length == 13) {
+            val item = if (scannedData.length == 13) {
                 dao.getCSVdata(scannedData)
-            } else if (scannedData != null && scannedData.length == 14) {
+            } else if (scannedData.length == 14) {
                 dao.getCSVdata(scannedData)
             } else {
                 null
@@ -402,9 +454,13 @@ class Nyuka04_Num : AppCompatActivity() {
             }
 
             KeyEvent.KEYCODE_F7 -> {
-                // F7キーが押されたときの処理
                 lifecycleScope.launch {
                     if (!checkSumsAndShowDialog()) {
+                        withContext(Dispatchers.IO) {
+                            // zumi数をすべて0に戻し、timeをnullにする
+                            dao.resetZumiAndTime()
+                        }
+                        // Nyuka02_KenpinStartへ遷移
                         val intent = Intent(this@Nyuka04_Num, Nyuka02_KenpinStart::class.java)
                         startActivity(intent)
                         finish()
@@ -418,7 +474,6 @@ class Nyuka04_Num : AppCompatActivity() {
                     // EditTextに何か入力されているかチェック
                     val caseNumValue = caseNum.text.toString().toIntOrNull()
                     val baraNumValue = baraNum.text.toString().toIntOrNull()
-
                     if (caseNumValue != null || baraNumValue != null) {
                         // 入力がある場合はfinishbtn()を呼び出す
                         withContext(Dispatchers.IO) {
@@ -461,30 +516,28 @@ class Nyuka04_Num : AppCompatActivity() {
                     }
                 }
                 true
-
             }
 
-            KeyEvent.KEYCODE_F6 -> {
-                lifecycleScope.launch {
-                    if (!checkSumsAndShowDialog()) {
-                        withContext(Dispatchers.IO) {
-                            // zumi数をすべて0に戻し、timeをnullにする
-                            dao.resetZumiAndTime()
-                        }
-                        // Nyuka02_KenpinStartへ遷移
-                        val intent = Intent(this@Nyuka04_Num, Nyuka02_KenpinStart::class.java)
-                        startActivity(intent)
-                        finish()
-                    }
-                }
-                true
-            }
+//            KeyEvent.KEYCODE_F6 -> {
+//                lifecycleScope.launch {
+//                    if (!checkSumsAndShowDialog()) {
+//                        withContext(Dispatchers.IO) {
+//                            // zumi数をすべて0に戻し、timeをnullにする
+//                            dao.resetZumiAndTime()
+//                        }
+//                        // Nyuka02_KenpinStartへ遷移
+//                        val intent = Intent(this@Nyuka04_Num, Nyuka02_KenpinStart::class.java)
+//                        startActivity(intent)
+//                        finish()
+//                    }
+//                }
+//                true
+//            }
 
             KeyEvent.KEYCODE_BACK -> {
                 // バックキーが押されたときの処理
                 true
             }
-
             else -> super.onKeyDown(keyCode, event)
         }
     }
@@ -712,11 +765,19 @@ class Nyuka04_Num : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        val sharedPreferences = getSharedPreferences("AppState", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putString("lastActivity", this::class.java.simpleName)
-        editor.putString("scannedData", scannedData) // scannedDataを保存
-        editor.apply()
+        // インスタンスを取得
+        val sharedPreferences: SharedPreferences = getSharedPreferences("AppState", Context.MODE_PRIVATE)
+        sharedPreferences.edit()
+            .putString("lastActivity", this::class.java.simpleName)
+            .apply()
+//        val editor = sharedPreferences.edit()
+//        editor.putString("lastActivity", this::class.java.simpleName)
+//        editor.putString("scannedData", scannedData) // scannedDataを保存
+//        Log.d("AppState", "scannedData: $scannedData") // 保存する前に値を確認
+//
+//        editor.commit()
+//        // 保存後に確認のためログを追加
+//        Log.d("AppState", "scannedData saved successfully")
     }
 
     private suspend fun checkSumsAndShowDialog(): Boolean {
@@ -736,17 +797,11 @@ class Nyuka04_Num : AppCompatActivity() {
     // UIを更新する関数
     private fun updateUI() {
         // UI更新の具体的な処理をここに記述
-        //商品点数テキスト
-//        val itemNum = findViewById<android.widget.TextView>(R.id.itemNum)
-        //商品点数済み数テキスト
+        //商品点数数テキスト
         val real_itemNum = findViewById<android.widget.TextView>(R.id.real_itemNum)
         //ケース数テキスト
-//        val caseAll = findViewById<android.widget.TextView>(R.id.itemAll)
-        //ケース済み数テキスト
         val casezumi = findViewById<android.widget.TextView>(R.id.real_itemAll)
         //バラ数テキスト
-//        val baraAll = findViewById<android.widget.TextView>(R.id.barareal)
-        //バラ済み数テキスト
         val barazumi = findViewById<android.widget.TextView>(R.id.barazumi)
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -774,9 +829,7 @@ class Nyuka04_Num : AppCompatActivity() {
                 val baraTotalFormat = String.format("%5d", baraTotal)
 
                 real_itemNum.text = "$countFormat/$distinctItemCountFormat" // 商品点数済み数を表示
-//                caseAll.text = caseTotal.toString() //ケース数
                 casezumi.text = "$caseFormat/$caseTotalFormat" //ケース数済み数
-//                baraAll.text = baraTotal.toString() //バラ数
                 barazumi.text = "$baraFormat/$baraTotalFormat" //バラ数済み数
             }
         }
