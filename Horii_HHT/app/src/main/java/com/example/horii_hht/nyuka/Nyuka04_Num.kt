@@ -28,8 +28,8 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.EditText
-import androidx.appcompat.app.AlertDialog
 import androidx.preference.PreferenceManager
+import com.example.horii_hht.CustomDialog
 import com.example.horii_hht.DB.BarcodeDAO
 import com.example.horii_hht.Main_Menu
 import com.example.horii_hht.R
@@ -56,7 +56,6 @@ class Nyuka04_Num : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper()) // ハンドラ
     private val checkInterval: Long = 10000 // 10秒ごとにチェック
     private var isDialogShown = false // finishbtn()でダイアログが表示されたかどうかを示すフラグ
-
 
     private val checkRunnable = object : Runnable { // チェック用のRunnable
         override fun run() {
@@ -254,23 +253,23 @@ class Nyuka04_Num : AppCompatActivity() {
                     } else {
                         // 結果がFalseならダイアログを表示
                         withContext(Dispatchers.Main) {
-                            AlertDialog.Builder(this@Nyuka04_Num)
+                            CustomDialog.Builder(this@Nyuka04_Num)
                                 .setTitle("確認")
-                                .setMessage("検品終了していません。完了させますか？")
-                                .setNegativeButton("いいえ") { dialog, _ ->
+                                .setMessage("検品終了していません。\n完了させますか？")
+                                .setPositiveButton("いいえ") {
                                     // NOが選択されたらUIを更新してダイアログを閉じる
-                                    dialog.dismiss()
                                     val intent =
                                         Intent(this@Nyuka04_Num, Nyuka03_Barread::class.java)
                                     startActivity(intent)
                                     finish()
-
                                 }
-                                .setPositiveButton("はい") { dialog, _ ->
+                                .setNegativeButton("はい") {
                                     // YESが選択されたらCSV書き出しの処理
                                     writeDataToCSV()
                                 }
-                                .show()
+                                .build()
+                                .show(supportFragmentManager, CustomDialog::class.simpleName)
+                            true
                         }
                     }
                 }
@@ -329,10 +328,10 @@ class Nyuka04_Num : AppCompatActivity() {
 
     private fun writeDataToCSV() {
         // 確認ダイアログを表示
-        AlertDialog.Builder(this)
+        CustomDialog.Builder(this)
             .setTitle("確認")
             .setMessage("CSVを出力します。")
-            .setPositiveButton("はい") { dialog, which ->
+            .setPositiveButton("はい") {
                 // ユーザーがOKを選択した場合、CSV書き込み処理を実行
                 lifecycleScope.launch {
                     val items = withContext(Dispatchers.IO) {
@@ -427,8 +426,10 @@ class Nyuka04_Num : AppCompatActivity() {
                     }
                 }
             }
-            .setNegativeButton("いいえ", null)
-            .show()
+            .setNegativeButton("いいえ")
+            .build()
+            .show(supportFragmentManager, CustomDialog::class.simpleName)
+        true
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -488,29 +489,29 @@ class Nyuka04_Num : AppCompatActivity() {
                             dao.areSumsEqual()
                         }
 
-                        if (areSumsEqual) {
-                            // 結果がTrueならそのままCSV書き出しの処理
-                            writeDataToCSV()
-                        } else {
-                            // 結果がFalseならダイアログを表示
-                            withContext(Dispatchers.Main) {
-                                AlertDialog.Builder(this@Nyuka04_Num)
+                        withContext(Dispatchers.Main) {
+                            if (areSumsEqual) {
+                                // 結果がTrueならそのままCSV書き出しの処理
+                                writeDataToCSV()
+                            } else {
+                                // 結果がFalseならダイアログを表示
+                                CustomDialog.Builder(this@Nyuka04_Num)
                                     .setTitle("確認")
-                                    .setMessage("検品終了していません。完了させますか？")
-                                    .setNegativeButton("いいえ") { dialog, _ ->
+                                    .setMessage("検品終了していません。\n完了させますか？")
+                                    .setPositiveButton("いいえ") {
                                         // NOが選択されたらUIを更新してダイアログを閉じる
-                                        dialog.dismiss()
                                         val intent =
                                             Intent(this@Nyuka04_Num, Nyuka03_Barread::class.java)
                                         startActivity(intent)
                                         finish()
-
                                     }
-                                    .setPositiveButton("はい") { dialog, _ ->
+                                    .setNegativeButton("はい") {
                                         // YESが選択されたらCSV書き出しの処理
                                         writeDataToCSV()
                                     }
-                                    .show()
+                                    .build()
+                                    .show(supportFragmentManager, CustomDialog::class.simpleName)
+                                true
                             }
                         }
                     }
@@ -538,6 +539,7 @@ class Nyuka04_Num : AppCompatActivity() {
                 // バックキーが押されたときの処理
                 true
             }
+
             else -> super.onKeyDown(keyCode, event)
         }
     }
@@ -552,7 +554,14 @@ class Nyuka04_Num : AppCompatActivity() {
             if (item != null) {
                 if (item.bara == item.barazumi && item.case_q == item.casezumi) {
                     withContext(Dispatchers.Main) {
-                        showAlertDialog("検品終了", "その商品は検品終了してます")
+                        CustomDialog.Builder(this@Nyuka04_Num)
+                            .setTitle("検品終了")
+                            .setMessage("その商品は検品が終了しています。")
+                            .setPositiveButton("OK")
+                            .setNegativeButton("")
+                            .build()
+                            .show(supportFragmentManager, CustomDialog::class.simpleName)
+                        true
 
                     }
                     return@withContext
@@ -562,30 +571,72 @@ class Nyuka04_Num : AppCompatActivity() {
 
                     if (caseNumValue == null && baraNumValue == null) {
                         withContext(Dispatchers.Main) {
-                            showAlertDialog(
-                                "エラー",
-                                "ケース数またはバラ数のいずれかを入力してください"
-                            )
+                            CustomDialog.Builder(this@Nyuka04_Num)
+                                .setTitle("エラー")
+                                .setMessage("ケース数かバラ数かいずれかに\n数字を入力してください。")
+                                .setPositiveButton("OK")
+                                .setNegativeButton("")
+                                .build()
+                                .show(supportFragmentManager, CustomDialog::class.simpleName)
+                            true
                         }
                         return@withContext
                     } else {
-                        if (caseNumValue != null && caseNumValue!! + item.casezumi > item.case_q) {
-                            withContext(Dispatchers.Main) {
-                                showAlertDialog("エラー", "ケース数が超えています")
+                        if (caseNumValue != null) {
+                            if (caseNumValue!! + item.casezumi > item.case_q) {
+                                val excessCasezumi = caseNumValue!! + item.casezumi - item.case_q // 超過ケース数を計算
+                                item.casezumi = item.case_q // ケース済み数を予定数量に設定
+                                dao.update(item) // データベースを更新
+                                withContext(Dispatchers.Main) {
+                                updateUI() // UIを更新
+                                caseNum.text.clear()
+
+                                    CustomDialog.Builder(this@Nyuka04_Num)
+                                        .setTitle("エラー") // ダイアログのタイトルを設定
+                                        .setMessage("ケース数が超えています。\n超過ケース数: $excessCasezumi") // ダイアログのメッセージを設定
+                                        .setPositiveButton("OK")
+
+                                        .setNegativeButton("") // 否定ボタンを設定
+                                        .build() // ダイアログを構築
+                                        .show(supportFragmentManager, CustomDialog::class.simpleName) // ダイアログを表示
+                                    true
+
+                                }
+                                return@withContext
+                            } else {
+                                item.casezumi = caseNumValue!! + item.casezumi // ケース済み数を更新
                             }
-                            return@withContext
-                        } else if (caseNumValue != null) {
-                            item.casezumi = caseNumValue!! + item.casezumi
                         }
 
-                        if (baraNumValue != null && baraNumValue!! + item.barazumi > item.bara) {
-                            withContext(Dispatchers.Main) {
-                                showAlertDialog("エラー", "バラ数が超えています")
+
+                        if (baraNumValue != null) {
+                            if (baraNumValue!! + item.barazumi > item.bara) {
+                                val excessBarazumi = baraNumValue!! + item.barazumi - item.bara // 超過バラ数を計算
+                                item.barazumi = item.bara // バラ済み数を予定数量に設定
+                                dao.update(item) // データベースを更新
+                                withContext(Dispatchers.Main) {
+                                updateUI() // UIを更新
+                                baraNum.text.clear()
+
+                                    CustomDialog.Builder(this@Nyuka04_Num)
+                                        .setTitle("確認") // ダイアログのタイトルを設定
+                                        .setMessage("バラ数が超えています。\n超過バラ数: $excessBarazumi") // ダイアログのメッセージを設定
+                                        .setPositiveButton("OK") {
+                                            val intent = Intent(this@Nyuka04_Num, Nyuka03_Barread::class.java)
+                                            startActivity(intent)
+                                            finish()
+                                        }// OKボタンを設定
+                                        .setNegativeButton("") // 否定ボタンを設定
+                                        .build() // ダイアログを構築
+                                        .show(supportFragmentManager, CustomDialog::class.simpleName) // ダイアログを表示
+                                    true
+                                }
+                                return@withContext
+                            } else {
+                                item.barazumi = baraNumValue!! + item.barazumi // バラ済み数を更新
                             }
-                            return@withContext
-                        } else if (baraNumValue != null) {
-                            item.barazumi = baraNumValue!! + item.barazumi
                         }
+
 
                         val currentDate = Date()
                         val dateFormat =
@@ -615,16 +666,25 @@ class Nyuka04_Num : AppCompatActivity() {
                 }
             } else {
                 withContext(Dispatchers.Main) {
-                    showAlertDialog("エラー", "商品が見つかりません")
+                    CustomDialog.Builder(this@Nyuka04_Num)
+                        .setTitle("検品終了")
+                        .setMessage("検品終了しています。\nF8を押して検品を完了させてください。")
+                        .setPositiveButton("OK")
+                        .setNegativeButton("")
+                        .build()
+                        .show(supportFragmentManager, CustomDialog::class.simpleName)
+                    true
                 }
             }
         }
     }
 
 
+    // F8押して、エディットテキストに入力値があった時に動く関数
     private suspend fun finishbtn() {
         withContext(Dispatchers.IO) {
             // スキャンデータに基づいてアイテムデータを取得
+            // itemData=合計値
             val itemData = dao.getTotal(scannedData)
             val itemAll = dao.getItemAll()
 
@@ -649,21 +709,35 @@ class Nyuka04_Num : AppCompatActivity() {
                     itemData.barazumi = newBarazumi
                     dao.update(itemData)
                     updateUI()
-                    caseNum.text.clear()
-                    baraNum.text.clear()
+                    withContext(Dispatchers.Main) {
+                        caseNum.text.clear()
+                        baraNum.text.clear()
+                    }
+
+
                 } else {
-                    // 超える場合、ダイアログを表示
+                    // 超える場合、超えない分だけアップデートし、超過分をダイアログで表示
+                    val excessCasezumi = if (newCasezumi > itemData.case_q) newCasezumi - itemData.case_q else 0 // 超過ケース数を計算
+                    val excessBarazumi = if (newBarazumi > itemData.bara) newBarazumi - itemData.bara else 0 // 超過バラ数を計算
+
+                    itemData.casezumi = minOf(newCasezumi, itemData.case_q) // 超えない分のケース済み数を設定
+                    itemData.barazumi = minOf(newBarazumi, itemData.bara) // 超えない分のバラ済み数を設定
+                    dao.update(itemData) // データベースを更新
+                    updateUI() // UIを更新
+
                     isDialogShown = true // ダイアログが表示されたことを示すフラグを設定
                     withContext(Dispatchers.Main) {
-                        AlertDialog.Builder(this@Nyuka04_Num)
-                            .setTitle("エラー")
-                            .setMessage("入力値が予定数量を超えています。")
-                            .setPositiveButton("OK") { dialog, _ ->
-                                caseNum.text.clear()
-                                baraNum.text.clear()
+                        CustomDialog.Builder(this@Nyuka04_Num)
+                            .setTitle("確認") // ダイアログのタイトルを設定
+                            .setMessage("入力値が予定数量を超えています。\n超過ケース数: $excessCasezumi\n超過バラ数: $excessBarazumi") // ダイアログのメッセージを設定
+                            .setPositiveButton("OK") {
+                                caseNum.text.clear() // ケース数入力欄をクリア
+                                baraNum.text.clear() // バラ数入力欄をクリア
                                 isDialogShown = false // ダイアログが閉じられたらフラグをリセット
                             }
-                            .show()
+                            .setNegativeButton("") // 否定ボタンを設定
+                            .build() // ダイアログを構築
+                            .show(supportFragmentManager, CustomDialog::class.simpleName) // ダイアログを表示
                     }
                 }
             } else {
@@ -676,18 +750,26 @@ class Nyuka04_Num : AppCompatActivity() {
         }
     }
 
-    suspend fun showAlertDialog(title: String, message: String) {
-        suspendCancellableCoroutine<Unit> { continuation ->
-            AlertDialog.Builder(this@Nyuka04_Num)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("OK") { _, _ ->
-                    continuation.resume(Unit) // ダイアログが閉じられたら処理を再開
-                }
-                .setCancelable(false)
-                .show()
-        }
-    }
+//    suspend fun showAlertDialog(title: String, message: String) {
+//        suspendCancellableCoroutine<Unit> { continuation ->
+//            CustomDialog.Builder(this)
+//                .setTitle("作業中")
+//                .setMessage("作業中です")
+//                .setPositiveButton("OK")
+//                .setNegativeButton("")
+//                .build()
+//                .show(supportFragmentManager, CustomDialog::class.simpleName)
+//            true
+//            AlertDialog.Builder(this@Nyuka04_Num)
+//                .setTitle(title)
+//                .setMessage(message)
+//                .setPositiveButton("OK") { _, _ ->
+//                    continuation.resume(Unit) // ダイアログが閉じられたら処理を再開
+//                }
+//                .setCancelable(false)
+//                .show()
+//        }
+//    }
 
 
     override fun onDestroy() {
@@ -699,11 +781,14 @@ class Nyuka04_Num : AppCompatActivity() {
     }    // ダイアログを表示するメソッド
 
     fun showWorkingDialog() {
-        AlertDialog.Builder(this)
+        CustomDialog.Builder(this)
             .setTitle("作業中")
             .setMessage("作業中です")
-            .setPositiveButton("OK", null)
-            .show()
+            .setPositiveButton("OK")
+            .setNegativeButton("")
+            .build()
+            .show(supportFragmentManager, CustomDialog::class.simpleName)
+        true
     }
 
     //指定した時間分放置してたら起動するメソッド
@@ -747,16 +832,19 @@ class Nyuka04_Num : AppCompatActivity() {
                     dao.deleteAllItems()
                     // メインスレッドでダイアログを表示
                     withContext(Dispatchers.Main) {
-                        AlertDialog.Builder(this@Nyuka04_Num)
+                        CustomDialog.Builder(this@Nyuka04_Num)
                             .setTitle("注意")
-                            .setMessage("経過時間$lockTimeMinutes 分。全ての作業を取り消しました。メインメニューに戻ります。")
-                            .setPositiveButton("OK") { _, _ ->
+                            .setMessage("経過時間$lockTimeMinutes 分。\n全ての作業を取り消しました。\nメインメニューに戻ります。")
+                            .setPositiveButton("OK") {
                                 // メインメニューに遷移
                                 val intent = Intent(this@Nyuka04_Num, Main_Menu::class.java)
                                 startActivity(intent)
                                 finish()
                             }
-                            .show()
+                            .setNegativeButton("")
+                            .build()
+                            .show(supportFragmentManager, CustomDialog::class.simpleName)
+                        true
                     }
                 }
             }
@@ -766,7 +854,8 @@ class Nyuka04_Num : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         // インスタンスを取得
-        val sharedPreferences: SharedPreferences = getSharedPreferences("AppState", Context.MODE_PRIVATE)
+        val sharedPreferences: SharedPreferences =
+            getSharedPreferences("AppState", Context.MODE_PRIVATE)
         sharedPreferences.edit()
             .putString("lastActivity", this::class.java.simpleName)
             .apply()
@@ -786,7 +875,14 @@ class Nyuka04_Num : AppCompatActivity() {
         }
         if (areSumsEqual) {
             withContext(Dispatchers.Main) {
-                showAlertDialog("検品終了", "検品終了してます。F8を押して検品を完了させてください。")
+                CustomDialog.Builder(this@Nyuka04_Num)
+                    .setTitle("検品終了")
+                    .setMessage("検品終了してます。\nF8を押して検品を完了させてください。")
+                    .setPositiveButton("OK")
+                    .setNegativeButton("")
+                    .build()
+                    .show(supportFragmentManager, CustomDialog::class.simpleName)
+                true
             }
             return true  // ダイアログ表示した場合
         }

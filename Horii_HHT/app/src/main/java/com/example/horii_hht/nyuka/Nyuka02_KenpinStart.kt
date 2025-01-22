@@ -12,14 +12,13 @@ import android.util.Log
 import android.view.KeyEvent
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import androidx.room.Room
 import com.cipherlab.barcode.GeneralString
 import com.cipherlab.barcode.ReaderManager
+import com.example.horii_hht.CustomDialog
 import com.example.horii_hht.DB.AppDatabase
 import com.example.horii_hht.DB.Item
 import com.example.horii_hht.DB.ItemDAO
@@ -35,7 +34,7 @@ import java.util.Locale
 
 class Nyuka02_KenpinStart : AppCompatActivity() {
     private lateinit var db: AppDatabase
-    private lateinit var dao: ItemDAO
+    lateinit var dao: ItemDAO
     private lateinit var filter: IntentFilter
     private var readerManager: ReaderManager? = null
     private var scannedData: String? = null
@@ -71,11 +70,14 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                         itemNum.text = distinctItemCount.toString()
                         itemAll.text = totalSuryo.toString()
                     } else {
-                        Toast.makeText(
-                            this@Nyuka02_KenpinStart,
-                            "リセットに失敗しました。",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        CustomDialog.Builder(this@Nyuka02_KenpinStart)
+                            .setTitle("エラー")
+                            .setMessage("リセットに失敗しました。")
+                            .setPositiveButton("OK")
+                            .setNegativeButton("")
+                            .build()
+                            .show(supportFragmentManager, CustomDialog::class.simpleName)
+                        true
                     }
                 }
                 withContext(Dispatchers.Main) {
@@ -197,11 +199,14 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                                 val count = dao.duplicationQR(kenpinNo, kenpinpage)
                                 if (count > 0) {
                                     withContext(Dispatchers.Main) {
-                                        AlertDialog.Builder(this@Nyuka02_KenpinStart)
+                                        CustomDialog.Builder(this@Nyuka02_KenpinStart)
                                             .setTitle("エラー")
-                                            .setMessage("すでに読み込まれているQRコードです")
-                                            .setPositiveButton("OK", null)
-                                            .show()
+                                            .setMessage("読込済みのQRコードです。")
+                                            .setPositiveButton("OK")
+                                            .setNegativeButton("")
+                                            .build()
+                                            .show(supportFragmentManager, CustomDialog::class.simpleName)
+                                        true
                                     }
                                     return@launch
                                 }
@@ -245,20 +250,26 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                                 e.printStackTrace()
                                 Log.e("DatabaseError", "Error during insertion", e)
                                 withContext(Dispatchers.Main) {
-                                    AlertDialog.Builder(this@Nyuka02_KenpinStart)
+                                    CustomDialog.Builder(this@Nyuka02_KenpinStart)
                                         .setTitle("エラー")
                                         .setMessage("不正なQRコードです。")
-                                        .setPositiveButton("OK", null)
-                                        .show()
+                                        .setPositiveButton("OK")
+                                        .setNegativeButton("")
+                                        .build()
+                                        .show(supportFragmentManager, CustomDialog::class.simpleName)
+                                    true
                                 }
                             }
                         }
                     } else {
-                        Toast.makeText(
-                            this@Nyuka02_KenpinStart,
-                            "スキャンデータが取得できませんでした",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        CustomDialog.Builder(this@Nyuka02_KenpinStart)
+                            .setTitle("エラー")
+                            .setMessage("スキャンデータが読み込めませんでした。")
+                            .setPositiveButton("OK")
+                            .setNegativeButton("")
+                            .build()
+                            .show(supportFragmentManager, CustomDialog::class.simpleName)
+                        true
                     }
                 }
             }
@@ -282,11 +293,14 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                             itemNum.text = distinctItemCount.toString()
                             itemAll.text = totalSuryo.toString()
                         } else {
-                            Toast.makeText(
-                                this@Nyuka02_KenpinStart,
-                                "リセットに失敗しました。",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            CustomDialog.Builder(this@Nyuka02_KenpinStart)
+                                .setTitle("エラー")
+                                .setMessage("リセットに失敗しました。")
+                                .setPositiveButton("OK")
+                                .setNegativeButton("")
+                                .build()
+                                .show(supportFragmentManager, CustomDialog::class.simpleName)
+                            true
                         }
                     }
                     withContext(Dispatchers.Main) {
@@ -325,11 +339,14 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
 
     // ダイアログを表示するメソッド
     fun showWorkingDialog() {
-        AlertDialog.Builder(this)
+        CustomDialog.Builder(this)
             .setTitle("作業中")
             .setMessage("作業中です")
-            .setPositiveButton("OK", null)
-            .show()
+            .setPositiveButton("OK")
+            .setNegativeButton("")
+            .build()
+            .show(supportFragmentManager, CustomDialog::class.simpleName)
+        true
     }
 
     //指定した時間分放置してたら起動するメソッド
@@ -373,16 +390,19 @@ class Nyuka02_KenpinStart : AppCompatActivity() {
                     dao.deleteAllItems()
                     // メインスレッドでダイアログを表示
                     withContext(Dispatchers.Main) {
-                        AlertDialog.Builder(this@Nyuka02_KenpinStart)
+                        CustomDialog.Builder(this@Nyuka02_KenpinStart)
                             .setTitle("注意")
-                            .setMessage("経過時間$lockTimeMinutes 分。全ての作業を取り消しました。メインメニューに戻ります。")
-                            .setPositiveButton("OK") { _, _ ->
+                            .setMessage("経過時間$lockTimeMinutes 分。\n全ての作業を取り消しました。\nメインメニューに戻ります。")
+                            .setPositiveButton("OK"){
                                 // メインメニューに遷移
                                 val intent = Intent(this@Nyuka02_KenpinStart, Main_Menu::class.java)
                                 startActivity(intent)
                                 finish()
                             }
-                            .show()
+                            .setNegativeButton("")
+                            .build()
+                            .show(supportFragmentManager, CustomDialog::class.simpleName)
+                        true
                     }
                 }
             }

@@ -3,10 +3,9 @@ package com.example.horii_hht.DB
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "Item")
+@Entity(tableName = "SyukkaItem")
 
-// 入荷のアイテム
-data class Item(
+data class SyukkaItem(
     @PrimaryKey(autoGenerate = true) val id: Int,
     val kenpinNo: String,
     val kenpinpage: String,
@@ -22,17 +21,10 @@ data class Item(
     val QRTime: String?
 )
 
-data class SummarizedData(
-    val totalCaseQ: Int,
-    val totalBara: Int,
-    val totalCasezumi: Int,
-    val totalBarazumi: Int
-)
-
 @Entity
 // SummarizedItemデータクラスを定義
-data class CSVData(
-   @PrimaryKey val kenpinNo: String,
+data class Syukka_CSVData(
+    @PrimaryKey val kenpinNo: String,
     val itemCD: String,
     val itemName: String,
     val totalCaseQ: Int,
@@ -45,9 +37,7 @@ data class CSVData(
     val QRTime: String?
 )
 
-data class MaxTimes(
+data class Syukka_MaxTimes(
     val maxKenpinTime: String?,
     val maxQRTime: String?
 )
-
-

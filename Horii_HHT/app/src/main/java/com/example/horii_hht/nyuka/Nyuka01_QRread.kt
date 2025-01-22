@@ -11,14 +11,13 @@ import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
 import android.widget.Button
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import androidx.room.Room
 import com.cipherlab.barcode.GeneralString
 import com.cipherlab.barcode.ReaderManager
+import com.example.horii_hht.CustomDialog
 import com.example.horii_hht.DB.AppDatabase
 import com.example.horii_hht.DB.Item
 import com.example.horii_hht.DB.ItemDAO
@@ -36,7 +35,7 @@ class Nyuka01_QRread : AppCompatActivity() {
     private lateinit var filter: IntentFilter //インテントフィルターを初期化
     private var readerManager: ReaderManager? = null //ReaderManagerを初期化
     private lateinit var db: AppDatabase //データベースを初期化
-    private lateinit var dao: ItemDAO //DAOを初期化
+    lateinit var dao: ItemDAO //DAOを初期化
     private lateinit var screenReceiver: ScreenStateReceiver //ScreenStateReceiverを初期化
     private val handler = Handler(Looper.getMainLooper()) // ハンドラ
     private val checkInterval: Long = 10000 // 10秒ごとにチェック
@@ -162,20 +161,26 @@ class Nyuka01_QRread : AppCompatActivity() {
                                 e.printStackTrace()
                                 Log.e("DatabaseError", "Error during insertion", e)
                                 withContext(Dispatchers.Main) {
-                                    AlertDialog.Builder(this@Nyuka01_QRread)
+                                    CustomDialog.Builder(this@Nyuka01_QRread)
                                         .setTitle("エラー")
                                         .setMessage("不正なQRコードです。")
-                                        .setPositiveButton("OK", null)
-                                        .show()
+                                        .setPositiveButton("OK")
+                                        .setNegativeButton("")
+                                        .build()
+                                        .show(supportFragmentManager, CustomDialog::class.simpleName)
+                                    true
                                 }
                             }
                         }
                     } else {
-                        Toast.makeText(
-                            this@Nyuka01_QRread,
-                            "スキャンデータが取得できませんでした",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        CustomDialog.Builder(this@Nyuka01_QRread)
+                            .setTitle("エラー")
+                            .setMessage("スキャンデータが読み込めませんでした。")
+                            .setPositiveButton("OK")
+                            .setNegativeButton("")
+                            .build()
+                            .show(supportFragmentManager, CustomDialog::class.simpleName)
+                        true
                     }
                 }
             }
@@ -216,11 +221,14 @@ class Nyuka01_QRread : AppCompatActivity() {
 
     // ダイアログを表示するメソッド
     fun showWorkingDialog() {
-        AlertDialog.Builder(this)
+        CustomDialog.Builder(this)
             .setTitle("作業中")
             .setMessage("作業中です")
-            .setPositiveButton("OK", null)
-            .show()
+            .setPositiveButton("OK")
+            .setNegativeButton("")
+            .build()
+            .show(supportFragmentManager, CustomDialog::class.simpleName)
+        true
     }
 
     //指定した時間分放置してたら起動するメソッド
@@ -255,16 +263,20 @@ class Nyuka01_QRread : AppCompatActivity() {
                     dao.deleteAllItems() // データベースの全アイテムを削除
                     // メインスレッドでダイアログを表示
                     withContext(Dispatchers.Main) {
-                        AlertDialog.Builder(this@Nyuka01_QRread)
+                        CustomDialog.Builder(this@Nyuka01_QRread)
                             .setTitle("注意")
-                            .setMessage("経過時間$lockTimeMinutes 分。全ての作業を取り消しました。メインメニューに戻ります。")
-                            .setPositiveButton("OK") { _, _ ->
+                            .setMessage("経過時間$lockTimeMinutes 分。\n全ての作業を取り消しました。\nメインメニューに戻ります。")
+                            .setPositiveButton("OK"){
                                 // メインメニューに遷移
                                 val intent = Intent(this@Nyuka01_QRread, Main_Menu::class.java)
                                 startActivity(intent)
                                 finish()
                             }
-                            .show()
+                            .setNegativeButton("")
+                            .build()
+                            .show(supportFragmentManager, CustomDialog::class.simpleName)
+                        true
+
                     }
                 }
             }

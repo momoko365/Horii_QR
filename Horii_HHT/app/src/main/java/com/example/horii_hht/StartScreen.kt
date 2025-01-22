@@ -10,9 +10,8 @@ import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 
+// 最初に表示されるスプラッシュ画面
 class SplashActivity : AppCompatActivity() {
-
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

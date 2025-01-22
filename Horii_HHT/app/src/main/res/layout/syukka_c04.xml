@@ -21,7 +21,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:fontFamily="@font/sawarabi_gothic"
-        android:text="商品ﾊﾞｰｺｰﾄﾞ入力"
+        android:text="商品バーコード入力"
         android:textColor="#000000"
         android:textSize="40sp"
         app:layout_constraintBottom_toBottomOf="@+id/view"
@@ -79,27 +79,7 @@
         app:layout_constraintStart_toEndOf="@+id/textView9"
         app:layout_constraintTop_toTopOf="@+id/textView9" />
 
-    <!--    <TextView-->
-    <!--        android:id="@+id/textView12"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:layout_marginStart="16dp"-->
-    <!--        android:fontFamily="@font/sawarabi_gothic"-->
-    <!--        android:text="/"-->
-    <!--        android:textSize="24sp"-->
-    <!--        app:layout_constraintBottom_toBottomOf="@+id/real_itemNum"-->
-    <!--        app:layout_constraintStart_toEndOf="@+id/real_itemNum"-->
-    <!--        app:layout_constraintTop_toTopOf="@+id/real_itemNum" />-->
 
-    <!--    <TextView-->
-    <!--        android:id="@+id/itemNum"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:layout_marginStart="16dp"-->
-    <!--        android:textSize="24sp"-->
-    <!--        app:layout_constraintBottom_toBottomOf="@+id/textView12"-->
-    <!--        app:layout_constraintStart_toEndOf="@+id/textView12"-->
-    <!--        app:layout_constraintTop_toTopOf="@+id/textView12" />-->
     <!--商品点数ここまで↑-->
 
     <!--    ケース数↓-->
@@ -126,81 +106,7 @@
         app:layout_constraintStart_toEndOf="@+id/back_btn"
         app:layout_constraintTop_toTopOf="@+id/back_btn" />
 
-    <!--    <TextView-->
-    <!--        android:id="@+id/textView13"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:layout_marginStart="16dp"-->
-    <!--        android:fontFamily="@font/sawarabi_gothic"-->
-    <!--        android:text="/"-->
-    <!--        android:textSize="24sp"-->
-    <!--        app:layout_constraintBottom_toBottomOf="@+id/real_itemAll"-->
-    <!--        app:layout_constraintStart_toEndOf="@+id/real_itemAll"-->
-    <!--        app:layout_constraintTop_toTopOf="@+id/real_itemAll" />-->
 
-    <!--    <TextView-->
-    <!--        android:id="@+id/itemAll"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:layout_marginStart="16dp"-->
-    <!--        android:textSize="24sp"-->
-    <!--        app:layout_constraintBottom_toBottomOf="@+id/real_itemAll"-->
-    <!--        app:layout_constraintStart_toEndOf="@+id/textView12"-->
-    <!--        app:layout_constraintTop_toTopOf="@+id/real_itemAll" />-->
-    <!--    ケース数↑-->
-
-    <!--バラ数↓-->
-    <TextView
-        android:id="@+id/textView19"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:fontFamily="@font/sawarabi_gothic"
-        android:text="バラ数"
-        android:textSize="30sp"
-        app:layout_constraintStart_toStartOf="@+id/back_btn"
-        app:layout_constraintTop_toBottomOf="@+id/back_btn" />
-
-    <TextView
-        android:id="@+id/barazumi"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="monospace"
-        android:textSize="34sp"
-        app:layout_constraintBottom_toBottomOf="@+id/textView19"
-        app:layout_constraintStart_toEndOf="@+id/back_btn"
-        app:layout_constraintTop_toTopOf="@+id/textView19" />
-
-    <!--    <TextView-->
-    <!--        android:id="@+id/textView23"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:fontFamily="@font/sawarabi_gothic"-->
-    <!--        android:text="/"-->
-    <!--        android:textSize="24sp"-->
-    <!--        app:layout_constraintBottom_toBottomOf="@+id/textView19"-->
-    <!--        app:layout_constraintEnd_toEndOf="@+id/textView13"-->
-    <!--        app:layout_constraintStart_toStartOf="@+id/textView13"-->
-    <!--        app:layout_constraintTop_toTopOf="@+id/textView19" />-->
-
-    <!--    <TextView-->
-    <!--        android:id="@+id/baraall"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:fontFamily="@font/sawarabi_gothic"-->
-    <!--        android:textSize="24sp"-->
-    <!--        app:layout_constraintBottom_toBottomOf="@+id/textView23"-->
-    <!--        app:layout_constraintEnd_toEndOf="@+id/itemAll"-->
-    <!--        app:layout_constraintStart_toStartOf="@+id/itemAll"-->
-    <!--        app:layout_constraintTop_toTopOf="@+id/textView23" />-->
-    <!--    バラ数↑-->
-
-    <!--    商品バーコードを入力してください-->
-
-    <!--    バーコード入力欄-->
-
-    <!--    作業中断ボタン-->
 
 
     <!--下部バー↓-->
@@ -215,7 +121,7 @@
         android:textAlignment="center"
         android:textColor="#4CAF50"
         android:textSize="27sp"
-        app:layout_constraintBottom_toTopOf="@+id/textView19"
+        app:layout_constraintBottom_toTopOf="@+id/back_btn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -226,7 +132,7 @@
         android:id="@+id/barcode"
         android:layout_width="320dp"
         android:layout_height="69dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="24dp"
         android:background="@drawable/bg_edittext"
         android:ems="10"
         android:fontFamily="@font/sawarabi_gothic"
@@ -234,6 +140,7 @@
         android:textAlignment="textEnd"
         android:textSize="34sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.494"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView5" />
 

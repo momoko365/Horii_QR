@@ -17,18 +17,27 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 //スクリーンのオンオフ状態を検知するレシーバーを作成する
-
 class ScreenStateReceiver : BroadcastReceiver() {
+    // スクリーンがオフになった時間を記録する変数
     private var screenOffTime: Long = 0
 
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
+            // 画面がオンになった時の処理
             Intent.ACTION_SCREEN_ON -> {
+                // 現在の時間を取得
                 val currentTime = System.currentTimeMillis()
+                // 画面オフからの経過時間を計算(画面オフされなかった場合リセットできない問題が出てきて、画面オフの時間を図るんじゃなくて最後にDBに更新があった時間を取得して現在時刻と照らし合わせることになったのでこの変数使ってない)
                 val elapsedTime = currentTime - screenOffTime
 
                 GlobalScope.launch(Dispatchers.IO) {
-                    val dao = (context as? Nyuka04_Num)?.dao
+                    val dao = when (context) {
+                        is Nyuka01_QRread -> context.dao
+                        is Nyuka02_KenpinStart -> context.dao
+                        is Nyuka03_Barread -> context.dao
+                        is Nyuka04_Num -> context.dao
+                        else -> null
+                    }
                     val maxTimes = dao?.getMaxTimes()
                     val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault())
                     val maxKenpinDate = maxTimes?.maxKenpinTime?.takeIf { it.isNotEmpty() }

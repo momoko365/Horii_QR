@@ -7,6 +7,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.horii_hht.nyuka.Nyuka01_QRread
 import com.example.horii_hht.setting.SettingsActivity
+import com.example.horii_hht.syukka.Syukka01
 
 class Main_Menu : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,6 +42,12 @@ class Main_Menu : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
+
+        syukkaBtn.setOnClickListener {
+            val intent = Intent(this, Syukka01::class.java)
+            startActivity(intent)
+            finish()
+        }
     }
 
 
@@ -58,6 +65,13 @@ class Main_Menu : AppCompatActivity() {
             KeyEvent.KEYCODE_F1 -> {
                 // F1キーが押されたときの処理
                 val intent = Intent(this, Nyuka01_QRread::class.java)
+                startActivity(intent)
+                finish()
+                true
+            }
+            KeyEvent.KEYCODE_F2 -> {
+                // F2キーが押されたときの処理
+                val intent = Intent(this, Syukka01::class.java)
                 startActivity(intent)
                 finish()
                 true

@@ -94,6 +94,8 @@
             android:resource="@array/preloaded_fonts" />
 
         <activity android:name=".setting.SettingsActivity" />
+        <activity android:name=".syukka.Syukka01" />
+        <activity android:name=".syukka.Syukka_C02" />
 
     </application>
 

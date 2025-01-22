@@ -23,7 +23,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="16dp"
         android:fontFamily="@font/sawarabi_gothic"
-        android:text="QRｺｰﾄﾞ読込み"
+        android:text="QRコード読み込み"
         android:textColor="#000000"
         android:textSize="40sp"
         app:layout_constraintBottom_toBottomOf="@+id/view"
@@ -73,7 +73,7 @@
         android:text="検品リストのQRコード\nを読み込んでください"
         android:textAlignment="center"
         android:textColor="#4CAF50"
-        android:textSize="24sp"
+        android:textSize="34sp"
         app:layout_constraintBottom_toTopOf="@+id/textView9"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -103,24 +103,12 @@
         android:fontFamily="@font/sawarabi_gothic"
         android:text="ケース数"
         android:textSize="34sp"
-        app:layout_constraintBottom_toTopOf="@+id/bara"
+        app:layout_constraintBottom_toTopOf="@+id/view2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView9" />
 
-    <TextView
-        android:id="@+id/bara"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="8dp"
-        android:fontFamily="@font/sawarabi_gothic"
-        android:text="バラ数"
-        android:textSize="34sp"
-        app:layout_constraintBottom_toTopOf="@+id/view2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/back_btn" />
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

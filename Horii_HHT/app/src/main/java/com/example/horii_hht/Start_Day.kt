@@ -8,7 +8,6 @@ import android.view.KeyEvent
 import android.widget.Button
 import android.widget.EditText
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
@@ -37,38 +36,32 @@ class Start_Day : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.start_date)
 
+        val kakutei_btn = findViewById<Button>(R.id.kakutei_btn)
+        val end_btn = findViewById<Button>(R.id.back_btn)
 
-
-        val kakutei_btn= findViewById<Button>(R.id.kakutei_btn)
-        val end_btn= findViewById<Button>(R.id.back_btn)
-
+        // F1：確定
         kakutei_btn.setOnClickListener {
             val intent = Intent(this, Start_Worker::class.java)
             startActivity(intent)
             true
-
         }
 
+        // F8：終了
         end_btn.setOnClickListener {
-            // ダイアログを作成
-            val builder = AlertDialog.Builder(this)
-            builder.setMessage("アプリを終了しますか？")
-                .setCancelable(false) // ダイアログの外をタップしても閉じない
-                .setPositiveButton("はい") { _, _ ->
+            CustomDialog.Builder(this@Start_Day)
+                .setTitle("確認")
+                .setMessage("アプリを終了しますか？")
+                .setPositiveButton("はい") {
                     finishAndRemoveTask() // アプリのタスクを完全に終了
                 }
-                .setNegativeButton("いいえ") { dialog, _ ->
-
-                    dialog.dismiss() // ダイアログを閉じる
+                .setNegativeButton("いいえ") {
 
                 }
-            // ダイアログを表示
-            val alertDialog = builder.create()
-            alertDialog.show()
+                .build()
+                .show(supportFragmentManager, CustomDialog::class.simpleName)
+
             true
         }
-
-
 
         // データベースの初期化
         lifecycleScope.launch {
@@ -91,7 +84,10 @@ class Start_Day : AppCompatActivity() {
                 sharedPreferences.edit()
                     .clear()
                     .apply()
-                Log.d("SharedPreferences", "クリア後: ${sharedPreferences.getString("lastActivity", null)}")
+                Log.d(
+                    "SharedPreferences",
+                    "クリア後: ${sharedPreferences.getString("lastActivity", null)}"
+                )
             }
 
             val lastActivity = sharedPreferences.getString("lastActivity", null)
@@ -105,7 +101,11 @@ class Start_Day : AppCompatActivity() {
                 if (items.isNotEmpty()) {
                     val intent = when (lastActivity) {
                         "Nyuka01_QRread" -> Intent(this@Start_Day, Nyuka01_QRread::class.java)
-                        "Nyuka02_KenpinStart" -> Intent(this@Start_Day, Nyuka02_KenpinStart::class.java)
+                        "Nyuka02_KenpinStart" -> Intent(
+                            this@Start_Day,
+                            Nyuka02_KenpinStart::class.java
+                        )
+
                         "Nyuka03_Barread" -> Intent(this@Start_Day, Nyuka03_Barread::class.java)
                         "Nyuka04_Num" -> Intent(this@Start_Day, Nyuka04_Num::class.java)
                         else -> null
@@ -116,46 +116,22 @@ class Start_Day : AppCompatActivity() {
                         .apply()
 
                     intent?.let {
-//                        CustomDialog.Builder(this@Start_Day)
-//                            .setTitle("再開確認")
-//                            .setMessage("前回中断したところから再開しますか")
-//                            .setPositiveButton("はい"){
-//                                startActivity(it)
-//                                finish()
-//                            }
-//                            .setNegativeButton("いいえ"){
-//                                lifecycleScope.launch {
-//                                    withContext(Dispatchers.IO) {
-//                                        dao.deleteAllItems()
-//                                    }
-//                                }
-//                            }
-//                            .build()
-//                            .show(supportFragmentManager, CustomDialog::class.simpleName)
-
-                        val dialog = AlertDialog.Builder(this@Start_Day)
+                        CustomDialog.Builder(this@Start_Day)
                             .setTitle("再開確認")
-                            .setMessage("前回中断したところから再開しますか？")
-                            .setNegativeButton("いいえ") { _, _ ->
+                            .setMessage("前回中断したところから再開しますか")
+                            .setPositiveButton("はい") {
+                                startActivity(it)
+                                finish()
+                            }
+                            .setNegativeButton("いいえ") {
                                 lifecycleScope.launch {
                                     withContext(Dispatchers.IO) {
                                         dao.deleteAllItems()
                                     }
                                 }
                             }
-                            .setPositiveButton("はい") { _, _ ->
-                                startActivity(it)
-                                finish()
-                            }
-                            .create()
-                        dialog.setCancelable(false) // ダイアログの外をタップしても閉じない
-
-                        dialog.setOnShowListener {
-                            // ダイアログ表示後に「はい」ボタンにフォーカスを設定
-                            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.requestFocus()
-                        }
-
-                        dialog.show()
+                            .build()
+                            .show(supportFragmentManager, CustomDialog::class.simpleName)
                     }
                 }
             }
@@ -230,29 +206,27 @@ class Start_Day : AppCompatActivity() {
                 startActivity(intent)
                 true
             }
-            KeyEvent.KEYCODE_F8 -> {
 
-                // ダイアログを作成
-                val builder = AlertDialog.Builder(this)
-                builder.setMessage("アプリを終了しますか？")
-                    .setCancelable(false) // ダイアログの外をタップしても閉じない
-                    .setPositiveButton("はい") { _, _ ->
+            KeyEvent.KEYCODE_F8 -> {
+                CustomDialog.Builder(this@Start_Day)
+                    .setTitle("確認")
+                    .setMessage("アプリを終了しますか？")
+                    .setPositiveButton("はい") {
                         finishAndRemoveTask() // アプリのタスクを完全に終了
                     }
-                    .setNegativeButton("いいえ") { dialog, _ ->
-
-                        dialog.dismiss() // ダイアログを閉じる
+                    .setNegativeButton("いいえ") {
 
                     }
-                // ダイアログを表示
-                val alertDialog = builder.create()
-                alertDialog.show()
-                    true
+                    .build()
+                    .show(supportFragmentManager, CustomDialog::class.simpleName)
+                true
             }
+
             KeyEvent.KEYCODE_BACK -> {
                 // バックキーが押されたときの処理
                 true
             }
+
             else -> super.onKeyDown(keyCode, event)
         }
     }
@@ -268,8 +242,6 @@ class Start_Day : AppCompatActivity() {
             Log.d("MyApplication", "ファイルが削除されました: ${tempFile.absolutePath}")
         }
     }
-
-
 }
 
 

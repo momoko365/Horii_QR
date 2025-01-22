@@ -17,13 +17,13 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import androidx.room.Room
 import com.cipherlab.barcode.GeneralString
 import com.cipherlab.barcode.ReaderManager
+import com.example.horii_hht.CustomDialog
 import com.example.horii_hht.DB.AppDatabase
 import com.example.horii_hht.DB.Barcode
 import com.example.horii_hht.DB.BarcodeDAO
@@ -45,7 +45,7 @@ class Nyuka03_Barread : AppCompatActivity() {
     private lateinit var filter: IntentFilter
     private var readerManager: ReaderManager? = null
     private lateinit var db: AppDatabase
-    private lateinit var dao: ItemDAO
+    lateinit var dao: ItemDAO
     private lateinit var barcodedao: BarcodeDAO
     private var data: String? = null
     private lateinit var barcodedata: EditText
@@ -95,7 +95,14 @@ class Nyuka03_Barread : AppCompatActivity() {
                                     if (items.isNotEmpty()) {
                                         if (itemBar.bara == itemBar.barazumi && itemBar.case_q == itemBar.casezumi){
                                             withContext(Dispatchers.Main) {
-                                                showAlertDialog("検品終了", "その商品は検品終了してます")
+                                                CustomDialog.Builder(this@Nyuka03_Barread)
+                                                    .setTitle("検品終了")
+                                                    .setMessage("その商品の検品は終了してます。")
+                                                    .setPositiveButton("OK")
+                                                    .setNegativeButton("")
+                                                    .build()
+                                                    .show(supportFragmentManager, CustomDialog::class.simpleName)
+                                                true
                                                 barcodedata.text.clear()
                                             }
                                         }else{
@@ -111,7 +118,14 @@ class Nyuka03_Barread : AppCompatActivity() {
                                         }
 
                                     } else {
-                                        showAlertDialog("エラー", "商品が見つかりません")
+                                        CustomDialog.Builder(this@Nyuka03_Barread)
+                                            .setTitle("エラー")
+                                            .setMessage("商品が異なります。")
+                                            .setPositiveButton("OK")
+                                            .setNegativeButton("")
+                                            .build()
+                                            .show(supportFragmentManager, CustomDialog::class.simpleName)
+                                        true
                                         barcodedata.text.clear()
                                     }
                                 }
@@ -119,16 +133,27 @@ class Nyuka03_Barread : AppCompatActivity() {
                         }
                     }else{
                         withContext(Dispatchers.Main) {
-                            showAlertDialog(
-                                "エラー",
-                                "有効なJANまたはITFコードを入力してください"
-                            )
+                            CustomDialog.Builder(this@Nyuka03_Barread)
+                                .setTitle("エラー")
+                                .setMessage("不正なコードです。")
+                                .setPositiveButton("OK")
+                                .setNegativeButton("")
+                                .build()
+                                .show(supportFragmentManager, CustomDialog::class.simpleName)
+                            true
                             barcodedata.text.clear()
                         }
                     }
                 }else{
                     withContext(Dispatchers.Main) {
-                        showAlertDialog("エラー", "バーコードを入力してください")
+                        CustomDialog.Builder(this@Nyuka03_Barread)
+                            .setTitle("エラー")
+                            .setMessage("バーコードを入力してください。")
+                            .setPositiveButton("OK")
+                            .setNegativeButton("")
+                            .build()
+                            .show(supportFragmentManager, CustomDialog::class.simpleName)
+                        true
                         barcodedata.text.clear()
                     }
                 }
@@ -338,7 +363,14 @@ class Nyuka03_Barread : AppCompatActivity() {
                             if (itemBar != null) {
                                 if (itemBar.bara == itemBar.barazumi && itemBar.case_q == itemBar.casezumi){
                                     withContext(Dispatchers.Main) {
-                                        showAlertDialog("検品終了", "その商品は検品終了してます")
+                                        CustomDialog.Builder(this@Nyuka03_Barread)
+                                            .setTitle("検品終了")
+                                            .setMessage("その商品の検品は終了してます。")
+                                            .setPositiveButton("OK")
+                                            .setNegativeButton("")
+                                            .build()
+                                            .show(supportFragmentManager, CustomDialog::class.simpleName)
+                                        true
                                         barcodedata.text.clear()
                                     }
                                 }else{
@@ -355,13 +387,27 @@ class Nyuka03_Barread : AppCompatActivity() {
                             }
                         } else {
                             withContext(Dispatchers.Main) {
-                                showAlertDialog("エラー", "商品が見つかりません")
+                                CustomDialog.Builder(this@Nyuka03_Barread)
+                                    .setTitle("エラー")
+                                    .setMessage("商品が見つかりません。")
+                                    .setPositiveButton("OK")
+                                    .setNegativeButton("")
+                                    .build()
+                                    .show(supportFragmentManager, CustomDialog::class.simpleName)
+                                true
                                 barcodedata.text.clear()
                             }
                         }
                     }
                 } else {
-                    showAlertDialog("エラー", "コードが不正です")
+                    CustomDialog.Builder(this@Nyuka03_Barread)
+                        .setTitle("エラー")
+                        .setMessage("コードが不正です。")
+                        .setPositiveButton("OK")
+                        .setNegativeButton("")
+                        .build()
+                        .show(supportFragmentManager, CustomDialog::class.simpleName)
+                    true
                     barcodedata.text.clear()
                 }
             }
@@ -387,15 +433,15 @@ class Nyuka03_Barread : AppCompatActivity() {
         }
     }
 
-    // エラーダイアログ表示の共通関数
-    private fun showAlertDialog(title: String, message: String) {
-        // ダイアログを表示
-        AlertDialog.Builder(this)
-            .setTitle(title)
-            .setMessage(message)
-            .setPositiveButton("OK", null)
-            .show()
-    }
+//    // エラーダイアログ表示の共通関数
+//    private fun showAlertDialog(title: String, message: String) {
+//        // ダイアログを表示
+//        AlertDialog.Builder(this)
+//            .setTitle(title)
+//            .setMessage(message)
+//            .setPositiveButton("OK", null)
+//            .show()
+//    }
 
     // ファンクションキー入力処理
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -423,7 +469,14 @@ class Nyuka03_Barread : AppCompatActivity() {
                                         if (items.isNotEmpty()) {
                                             if (itemBar.bara == itemBar.barazumi && itemBar.case_q == itemBar.casezumi){
                                                 withContext(Dispatchers.Main) {
-                                                    showAlertDialog("検品終了", "その商品は検品終了してます")
+                                                    CustomDialog.Builder(this@Nyuka03_Barread)
+                                                        .setTitle("検品終了")
+                                                        .setMessage("その商品の検品は終了してます。")
+                                                        .setPositiveButton("OK")
+                                                        .setNegativeButton("")
+                                                        .build()
+                                                        .show(supportFragmentManager, CustomDialog::class.simpleName)
+                                                    true
                                                     barcodedata.text.clear()
                                                 }
                                             }else{
@@ -439,7 +492,14 @@ class Nyuka03_Barread : AppCompatActivity() {
                                             }
 
                                         } else {
-                                            showAlertDialog("エラー", "商品が見つかりません")
+                                            CustomDialog.Builder(this@Nyuka03_Barread)
+                                                .setTitle("エラー")
+                                                .setMessage("商品が見つかりません。")
+                                                .setPositiveButton("OK")
+                                                .setNegativeButton("")
+                                                .build()
+                                                .show(supportFragmentManager, CustomDialog::class.simpleName)
+                                            true
                                             barcodedata.text.clear()
                                         }
                                     }
@@ -447,16 +507,27 @@ class Nyuka03_Barread : AppCompatActivity() {
                             }
                         }else{
                             withContext(Dispatchers.Main) {
-                                showAlertDialog(
-                                    "エラー",
-                                    "有効なJANまたはITFコードを入力してください"
-                                )
+                                CustomDialog.Builder(this@Nyuka03_Barread)
+                                    .setTitle("エラー")
+                                    .setMessage("有効なバーコードを入力してください。")
+                                    .setPositiveButton("OK")
+                                    .setNegativeButton("")
+                                    .build()
+                                    .show(supportFragmentManager, CustomDialog::class.simpleName)
+                                true
                                 barcodedata.text.clear()
                             }
                         }
                     }else{
                         withContext(Dispatchers.Main) {
-                            showAlertDialog("エラー", "バーコードを入力してください")
+                            CustomDialog.Builder(this@Nyuka03_Barread)
+                                .setTitle("エラー")
+                                .setMessage("バーコードを入力してください。")
+                                .setPositiveButton("OK")
+                                .setNegativeButton("")
+                                .build()
+                                .show(supportFragmentManager, CustomDialog::class.simpleName)
+                            true
                             barcodedata.text.clear()
                         }
                     }
@@ -560,11 +631,14 @@ class Nyuka03_Barread : AppCompatActivity() {
 
     // ダイアログを表示するメソッド
     fun showWorkingDialog() {
-        AlertDialog.Builder(this)
+        CustomDialog.Builder(this)
             .setTitle("作業中")
             .setMessage("作業中です")
-            .setPositiveButton("OK", null)
-            .show()
+            .setPositiveButton("OK")
+            .setNegativeButton("")
+            .build()
+            .show(supportFragmentManager, CustomDialog::class.simpleName)
+        true
     }
 
     //指定した時間分放置してたら起動するメソッド
@@ -608,16 +682,19 @@ class Nyuka03_Barread : AppCompatActivity() {
                     dao.deleteAllItems()
                     // メインスレッドでダイアログを表示
                     withContext(Dispatchers.Main) {
-                        AlertDialog.Builder(this@Nyuka03_Barread)
+                        CustomDialog.Builder(this@Nyuka03_Barread)
                             .setTitle("注意")
-                            .setMessage("経過時間$lockTimeMinutes 分。全ての作業を取り消しました。メインメニューに戻ります。")
-                            .setPositiveButton("OK") { _, _ ->
+                            .setMessage("経過時間$lockTimeMinutes 分。\n全ての作業を取り消しました。\nメインメニューに戻ります。")
+                            .setPositiveButton("OK"){
                                 // メインメニューに遷移
                                 val intent = Intent(this@Nyuka03_Barread, Main_Menu::class.java)
                                 startActivity(intent)
                                 finish()
                             }
-                            .show()
+                            .setNegativeButton("")
+                            .build()
+                            .show(supportFragmentManager, CustomDialog::class.simpleName)
+                        true
                     }
                 }
             }

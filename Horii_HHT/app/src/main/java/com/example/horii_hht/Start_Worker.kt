@@ -9,7 +9,6 @@ import android.view.KeyEvent
 import android.widget.Button
 import android.widget.EditText
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
@@ -43,13 +42,15 @@ class Start_Worker : AppCompatActivity() {
                     finish()
                 } else {
                     // workerCDが合致しない場合、ダイアログ表示
-                    val dialog = AlertDialog.Builder(this@Start_Worker)
+                    CustomDialog.Builder(this@Start_Worker)
                         .setTitle("エラー")
                         .setMessage("コードの誤りです")
-                        .setPositiveButton("OK", null)
-                        .create()
+                        .setPositiveButton("OK")
+                        .setNegativeButton("")
+                        .build()
+                        .show(supportFragmentManager, CustomDialog::class.simpleName)
                     true
-                    dialog.show()
+
                 }
             }
             true
@@ -110,13 +111,14 @@ class Start_Worker : AppCompatActivity() {
                         finish()
                     } else {
                         // workerCDが合致しない場合、ダイアログ表示
-                        val dialog = AlertDialog.Builder(this@Start_Worker)
+                        CustomDialog.Builder(this@Start_Worker)
                             .setTitle("エラー")
                             .setMessage("コードの誤りです")
-                            .setPositiveButton("OK", null)
-                            .create()
+                            .setPositiveButton("OK")
+                            .setNegativeButton("")
+                            .build()
+                            .show(supportFragmentManager, CustomDialog::class.simpleName)
                         true
-                        dialog.show()
                     }
                 }
                 true

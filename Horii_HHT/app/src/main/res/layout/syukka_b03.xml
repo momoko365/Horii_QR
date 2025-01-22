@@ -123,24 +123,13 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:fontFamily="@font/sawarabi_gothic"
-        android:text="ケース数"
-        android:textSize="34sp"
-        app:layout_constraintBottom_toTopOf="@+id/bara"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView9" />
-
-    <!-- バラ数 -->
-    <TextView
-        android:id="@+id/bara"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:fontFamily="@font/sawarabi_gothic"
         android:text="バラ数"
         android:textSize="34sp"
         app:layout_constraintBottom_toTopOf="@+id/startbtn"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/back_btn" />
+        app:layout_constraintTop_toBottomOf="@+id/textView9" />
+
+
 
 
     <TextView
@@ -167,17 +156,7 @@
         app:layout_constraintStart_toStartOf="@+id/real_itemNum"
         app:layout_constraintTop_toTopOf="@+id/back_btn" />
 
-    <TextView
-        android:id="@+id/realbara"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/sawarabi_gothic"
-        android:textSize="34sp"
-        app:layout_constraintBottom_toBottomOf="@+id/bara"
-        app:layout_constraintEnd_toEndOf="@+id/real_itemAll"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/real_itemAll"
-        app:layout_constraintTop_toTopOf="@+id/bara" />
+
 
     <!-- 検品開始ボタン -->
     <Button
@@ -192,7 +171,7 @@
         app:layout_constraintBottom_toTopOf="@+id/view2"
         app:layout_constraintEnd_toEndOf="@+id/view2"
         app:layout_constraintStart_toStartOf="@+id/view2"
-        app:layout_constraintTop_toBottomOf="@+id/bara"
+        app:layout_constraintTop_toBottomOf="@+id/back_btn"
         android:focusable="true"
         android:focusableInTouchMode="true"/>
 
