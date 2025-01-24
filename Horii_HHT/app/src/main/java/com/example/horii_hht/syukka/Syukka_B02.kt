@@ -4,22 +4,17 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.preference.PreferenceManager
 import androidx.room.Room
 import com.cipherlab.barcode.GeneralString
 import com.cipherlab.barcode.ReaderManager
 import com.example.horii_hht.CustomDialog
 import com.example.horii_hht.DB.AppDatabase
-import com.example.horii_hht.DB.Item
 import com.example.horii_hht.DB.SyukkaDAO
 import com.example.horii_hht.DB.SyukkaItem
 import com.example.horii_hht.Main_Menu
@@ -33,7 +28,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class Syukka_C02 : AppCompatActivity(){
+class Syukka_B02 : AppCompatActivity(){
     private lateinit var filter : IntentFilter
     private var readerManager: ReaderManager? = null
     private  lateinit var db: AppDatabase
@@ -142,10 +137,10 @@ class Syukka_C02 : AppCompatActivity(){
                                 val allItem = dao.getSyukkaItemAll()
                                 Log.d("Database", "Current items in database: $allItem")
 
-                                // UIスレッドでアクティビティを再起動
+
                                 withContext(Dispatchers.Main) {
                                     val nextIntent =
-                                        Intent(this@Syukka_C02, Syukka_C03::class.java)
+                                        Intent(this@Syukka_B02, Syukka_B03::class.java)
                                     startActivity(nextIntent)
                                     finish()
                                 }
@@ -154,7 +149,7 @@ class Syukka_C02 : AppCompatActivity(){
                                 e.printStackTrace()
                                 Log.e("DatabaseError", "Error during insertion", e)
                                 withContext(Dispatchers.Main) {
-                                    CustomDialog.Builder(this@Syukka_C02)
+                                    CustomDialog.Builder(this@Syukka_B02)
                                         .setTitle("エラー")
                                         .setMessage("不正なQRコードです。")
                                         .setPositiveButton("OK")
@@ -166,7 +161,7 @@ class Syukka_C02 : AppCompatActivity(){
                             }
                         }
                     } else {
-                        CustomDialog.Builder(this@Syukka_C02)
+                        CustomDialog.Builder(this@Syukka_B02)
                             .setTitle("エラー")
                             .setMessage("スキャンデータが読み込めませんでした。")
                             .setPositiveButton("OK")

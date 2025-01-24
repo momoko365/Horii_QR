@@ -36,6 +36,7 @@ class ScreenStateReceiver : BroadcastReceiver() {
                         is Nyuka02_KenpinStart -> context.dao
                         is Nyuka03_Barread -> context.dao
                         is Nyuka04_Num -> context.dao
+
                         else -> null
                     }
                     val maxTimes = dao?.getMaxTimes()

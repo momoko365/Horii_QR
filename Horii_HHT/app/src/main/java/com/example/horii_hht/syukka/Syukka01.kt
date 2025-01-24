@@ -1,15 +1,20 @@
 package com.example.horii_hht.syukka
 
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.view.KeyEvent
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import com.cipherlab.barcode.ReaderManager
 import com.example.horii_hht.CustomDialog
+import com.example.horii_hht.DB.AppDatabase
 import com.example.horii_hht.R
 import com.example.horii_hht.Start_Worker
 
 class Syukka01 : AppCompatActivity(){
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,6 +24,11 @@ class Syukka01 : AppCompatActivity(){
 
         casebtn.setOnClickListener {
             val intent = Intent(this, Syukka_C02::class.java)
+            startActivity(intent)
+            finish()
+        }
+        barabtn.setOnClickListener {
+            val intent = Intent(this, Syukka_B02::class.java)
             startActivity(intent)
             finish()
         }
@@ -33,6 +43,14 @@ class Syukka01 : AppCompatActivity(){
                 finish()
                 true
             }
+            KeyEvent.KEYCODE_F2 -> {
+                // F2キーが押されたときの処理
+                val intent = Intent(this, Syukka_B02::class.java)
+                startActivity(intent)
+                finish()
+                true
+            }
+
 
             else -> super.onKeyDown(keyCode, event)
         }

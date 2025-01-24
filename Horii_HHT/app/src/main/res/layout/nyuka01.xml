@@ -23,7 +23,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="16dp"
         android:fontFamily="@font/sawarabi_gothic"
-        android:text="QRｺｰﾄﾞ読込み"
+        android:text="QRｺｰﾄﾞ読込"
         android:textColor="#000000"
         android:textSize="40sp"
         app:layout_constraintBottom_toBottomOf="@+id/view"

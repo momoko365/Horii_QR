@@ -9,9 +9,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Worker::class, Item::class, Barcode::class], version = 52, exportSchema = false)
+@Database(entities = [Worker::class, Item::class, Barcode::class,SyukkaItem::class], version = 54, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun workerDAO(): WorkerDAO
     abstract fun itemDAO(): ItemDAO
     abstract fun barcodeDAO(): BarcodeDAO
+    abstract fun syukkaDAO(): SyukkaDAO
 }

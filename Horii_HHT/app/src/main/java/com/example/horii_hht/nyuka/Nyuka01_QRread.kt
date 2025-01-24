@@ -149,7 +149,7 @@ class Nyuka01_QRread : AppCompatActivity() {
                                 val allItem = dao.getItemAll()
                                 Log.d("Database", "Current items in database: $allItem")
 
-                                // UIスレッドでアクティビティを再起動
+
                                 withContext(Dispatchers.Main) {
                                     val nextIntent =
                                         Intent(this@Nyuka01_QRread, Nyuka02_KenpinStart::class.java)
@@ -284,12 +284,10 @@ class Nyuka01_QRread : AppCompatActivity() {
     }
     override fun onPause() {
         super.onPause()
-//        if (source != "Start_Day") {
             val sharedPreferences = getSharedPreferences("AppState", Context.MODE_PRIVATE)
             val editor = sharedPreferences.edit()
             editor.putString("lastActivity", this::class.java.simpleName)
             editor.apply()
-//        }
     }
 
 

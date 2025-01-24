@@ -96,6 +96,14 @@
         <activity android:name=".setting.SettingsActivity" />
         <activity android:name=".syukka.Syukka01" />
         <activity android:name=".syukka.Syukka_C02" />
+        <activity android:name=".syukka.Syukka_C03" />
+        <activity android:name=".syukka.Syukka_C04" />
+        <activity android:name=".syukka.Syukka_C05" />
+        <activity android:name=".syukka.Syukka_B02" />
+        <activity android:name=".syukka.Syukka_B03" />
+        <activity android:name=".syukka.Syukka_B04" />
+        <activity android:name=".syukka.Syukka_B05" />
+
 
     </application>
 
